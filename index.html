@@ -292,6 +292,8 @@
     <a href="#sec12"><span class="nav-num">12</span> Visuella diagram</a>
     <a href="#sec13"><span class="nav-num">13</span> Multimodalitet</a>
     <a href="#sec14"><span class="nav-num">14</span> Hallucinationsmekanik</a>
+    <a href="#sec15"><span class="nav-num">15</span> Dummare eller smartare?</a>
+    <a href="#sec16"><span class="nav-num">16</span> Riskkategorier</a>
 </nav>
 
 <!-- PROGRESS BAR -->
@@ -665,6 +667,72 @@ Format: Numrerad lista med orsak → insikt → åtgärd.
             <div class="answer">Prompt chaining innebär att man bryter ner en komplex uppgift i flera sekventiella steg, där outputen från ett steg blir input till nästa. Det är användbart för att LLM:er hanterar komplexa uppgifter bättre när de delas upp – varje steg blir enklare och resultatet blir mer tillförlitligt.</div>
         </div>
     </div>
+
+    <h3>AI som filter, inte facit</h3>
+    <div class="card key-concept">
+        <p>En viktig princip: använd AI för att <strong>reducera informationsmängden</strong> innan mänsklig analys. Låt AI prioritera <em>vad som bör läsas</em> snarare än avgöra <em>vad som är sant</em>. I högriskbeslut: kombinera AI-destillering med mänsklig granskning.</p>
+    </div>
+
+    <div class="card warning">
+        <p><strong>Vad LLM:er INTE är bra på:</strong></p>
+        <ul>
+            <li><strong>Sanning och ansvar</strong> – kan inte garantera korrekthet eller ta ansvar för sina svar</li>
+            <li><strong>Kontext utanför texten</strong> – förstår inte organisationspolitik, outtalade regler eller känslig dynamik</li>
+            <li><strong>Omdöme och prioritering</strong> – utan tydliga instruktioner kan den inte avgöra vad som är viktigast</li>
+        </ul>
+        <p>OBS: LLM:er är <strong>mycket bra på att låta övertygande</strong> även när de har fel. Kunskap ≠ välformulerad text.</p>
+    </div>
+
+    <h3>Kunskapstransformation i organisationer</h3>
+    <p>GenAI kan hjälpa organisationer att <strong>destillera</strong> stora mängder text och data. Utmaningen: organisationer drunknar i dokument, mejl, möten, tickets, loggar och rapporter. <strong>Människor är flaskhalsen</strong> – att läsa, jämföra och minnas allt är omöjligt manuellt.</p>
+
+    <h4>Operativt &amp; administrativt arbete</h4>
+    <ul>
+        <li>Sammanfatta långa mejltrådar till beslut, öppna frågor och nästa steg</li>
+        <li>Generera mötesanteckningar och action points från videomöten</li>
+        <li>Skapa veckovisa statusrapporter genom att sammanfatta projektverktyg (Jira, Asana, Trello)</li>
+        <li>Kondensera interna policies till "vad gäller för mig?"-sammanfattningar</li>
+    </ul>
+
+    <h4>Kund, support &amp; kommunikation</h4>
+    <ul>
+        <li>Sammanfatta kundens historik inför ett supportsamtal</li>
+        <li>Klustra och sammanfatta återkommande kundproblem till produktinsikter</li>
+        <li>Ta fram korta "root cause summaries" från incident- och felrapporter</li>
+        <li>Förvandla tekniska felsökningar till kundanpassade svar</li>
+    </ul>
+
+    <h4>Teknik, IT &amp; drift</h4>
+    <ul>
+        <li>Sammanfatta applikationsloggar till incidentbeskrivningar</li>
+        <li>Identifiera mönster i felrapporter över tid</li>
+        <li>Sammanställa release notes från kod-commits och pull requests</li>
+        <li>Skapa översikter av systemarkitektur från teknisk dokumentation</li>
+    </ul>
+
+    <h4>Kunskapsarbete &amp; analys</h4>
+    <ul>
+        <li>Jämföra flera rapporter och identifiera gemensamma slutsatser</li>
+        <li>Sammanfatta forskningsartiklar till praktiska implikationer</li>
+        <li>Identifiera trender i stora mängder fritextsvar (enkäter, feedback)</li>
+        <li>Skapa beslutsunderlag genom att väga för- och nackdelar i olika alternativ</li>
+    </ul>
+
+    <div class="quiz">
+        <h4>Testa din förståelse</h4>
+        <div class="question">
+            <p>1. Vad innebär principen "AI som filter, inte facit"?</p>
+            <textarea placeholder="Skriv ditt svar här..."></textarea>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">Visa svar</button>
+            <div class="answer">Det innebär att AI bör användas för att reducera informationsmängden och prioritera vad som bör läsas – inte för att avgöra vad som är sant. AI fungerar som ett förfilter, men den mänskliga granskningen är fortfarande nödvändig, särskilt i högriskbeslut.</div>
+        </div>
+        <div class="question">
+            <p>2. Ge ett konkret exempel på kunskapstransformation i en organisation.</p>
+            <textarea placeholder="Skriv ditt svar här..."></textarea>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">Visa svar</button>
+            <div class="answer">Exempelvis inom kundsupport: AI sammanfattar kundens historik inför ett supportsamtal, klustrar återkommande kundproblem till produktinsikter, och tar fram "root cause summaries" från incident- och felrapporter. Det sparar tid och ger supportagenten bättre förutsättningar.</div>
+        </div>
+    </div>
 </section>
 
 <!-- ============================================================ -->
@@ -842,6 +910,51 @@ Format: Numrerad lista med orsak → insikt → åtgärd.
         <div class="diagram-label">Figur 6: Flöde för hur en LLM använder ett verktyg (tool call)</div>
     </div>
 
+    <h3>Vem gör vad vid tool calling?</h3>
+    <table>
+        <thead><tr><th>Steg</th><th>Aktör</th><th>Vad som händer</th></tr></thead>
+        <tbody>
+            <tr><td>1</td><td><strong>Systemet</strong></td><td>Berättar för LLM:en vilka verktyg som finns tillgängliga</td></tr>
+            <tr><td>2</td><td><strong>Modellen</strong></td><td>Väljer om och vilket verktyg som behövs + formulerar argument till funktionen</td></tr>
+            <tr><td>3</td><td><strong>Systemet</strong></td><td>Kör anropet i verkligheten + returnerar resultat till LLM:en</td></tr>
+            <tr><td>4</td><td><strong>Modellen</strong></td><td>Tolkar resultatet och fortsätter flödet</td></tr>
+        </tbody>
+    </table>
+
+    <div class="card key-concept">
+        <p><strong>Modellen kör inte verktyget.</strong> Den <em>föreslår</em> ett verktyg. Systemet runt modellen exekverar det och skickar tillbaka resultatet.</p>
+        <p><strong>Varför lyckas modellen med detta?</strong> Moderna modeller är tränade (och/eller instruerade) på exempel där korrekt beteende är: när extern data behövs → skriv sekvensen för tool call. När tool-resultatet kommer tillbaka → använd det i svaret.</p>
+    </div>
+
+    <h3>Kodexempel: Tool Call</h3>
+    <div class="code-example"><span class="comment">// 1. Systemet definierar verktyg och instruktioner:</span>
+[SYSTEM]
+Du är en hjälpsam assistent. Använd verktyg vid extern data.
+Available_Tools:
+- get_weather(city: string) -> string
+
+<span class="comment">// 2. Användaren ställer en fråga:</span>
+[USER]
+Hur är vädret i Stockholm idag?
+
+<span class="comment">// 3. Modellen föreslår ett verktygsanrop:</span>
+[ASSISTANT_OUTPUT]
+&lt;TOOL_CALL name=<span class="string">"get_weather"</span>&gt;
+  {<span class="string">"city"</span>: <span class="string">"Stockholm"</span>}
+&lt;/TOOL_CALL&gt;
+
+<span class="comment">// 4. Systemet kör anropet och returnerar resultat:</span>
+[TOOL_OUTPUT name=<span class="string">"get_weather"</span>]
+  {<span class="string">"city"</span>: <span class="string">"Stockholm"</span>, <span class="string">"temp_c"</span>: -3}
+
+<span class="comment">// 5. Modellen formulerar svar baserat på resultatet:</span>
+[ASSISTANT_OUTPUT]
+I Stockholm är det -3°C. Klä dig varmt!</div>
+
+    <div class="card warning">
+        <p><strong>Viktigt:</strong> I en chatbot är ett fel "bara ett dåligt svar". I en agent med verktyg kan ett fel bli ett <strong>mejl till fel kund, radering av data eller ett felaktigt affärsbeslut</strong>. Därför kräver agenter säkerhet by design.</p>
+    </div>
+
     <h3>Typer av verktyg</h3>
     <ul>
         <li><strong>Sökverktyg</strong> – söka på webben, i databaser, i dokument (RAG)</li>
@@ -850,9 +963,87 @@ Format: Numrerad lista med orsak → insikt → åtgärd.
         <li><strong>Filhantering</strong> – läsa, skriva, redigera filer</li>
     </ul>
 
+    <h3>RAG (Retrieval-Augmented Generation)</h3>
+    <div class="card key-concept">
+        <p><strong>RAG</strong> är en teknik för att hämta relevanta dokument från en samling och använda dem som kontext för LLM:ens svar. Tre steg:</p>
+        <ul>
+            <li><strong>Retrieval (Hämtning):</strong> Systemet söker och hämtar relevanta dokument i externa databaser (ofta vektordatabaser) utifrån användarens fråga. Likt en traditionell sökmotor (typ Google).</li>
+            <li><strong>Augmentation (Förstärkning):</strong> De hämtade dokumenten kombineras med den ursprungliga frågan i en prompt till språkmodellen.</li>
+            <li><strong>Generation (Generering):</strong> LLM:en skapar ett svar som är baserat på både dokumenten och frågan.</li>
+        </ul>
+    </div>
+
+    <div class="card analogy">
+        <p>RAG är som en <strong>student som får ta med sig anteckningar till tentan</strong>. Istället för att svara helt från minnet (kan hallucinera), slår studenten upp relevant information först och formulerar sedan sitt svar baserat på faktiska källor.</p>
+    </div>
+
+    <div class="highlight-box">
+        <p><strong>Varför RAG?</strong></p>
+        <ul>
+            <li>Färskare och mer korrekt info (minskar "föråldrade antaganden")</li>
+            <li>Mindre hallucinationer (men inte noll)</li>
+            <li>Spårbarhet: du kan visa vilka källor som användes</li>
+        </ul>
+        <p><strong>Viktigt:</strong> Modellen kör inte sökningen själv – <em>systemet</em> gör sökningen och hämtningen, modellen använder resultatet. Modellen kan fortfarande misstolka utdragen eller få "fel" utdrag.</p>
+    </div>
+
+    <div class="card key-concept">
+        <p><strong>Passar bäst för:</strong> Hyfsat statisk data – policies, manualer, intern dokumentation, produktinfo, transkriberingar.</p>
+        <p><strong>Exempel:</strong> Kundsupport → fråga → hämta systemdokumentation + tidigare ärenden → generera svar och föreslå nästa steg.</p>
+        <p><strong>Kom ihåg:</strong> Inga garantier för att LLM svarar korrekt, men spårbarheten ökar.</p>
+    </div>
+
+    <h3>Vektordatabaser &amp; Embeddings</h3>
+    <p>Hur kan man hitta det mest relevanta dokumentet utifrån en sökfråga som inte ens innehåller samma ord som dokumentet?</p>
+
+    <div class="card key-concept">
+        <ul>
+            <li>Ett dokument omvandlas till <strong>siffror (vektorer)</strong> som representerar textens <em>betydelse</em></li>
+            <li>Liknande dokument hamnar <strong>nära varandra</strong> i ett "betydelserum" (vector space)</li>
+            <li>Siffrorna lagras i en <strong>vektordatabas</strong></li>
+            <li>När man ställer en sökfråga omvandlas den till samma typ av vektor och <strong>matchas</strong> mot vektorerna i databasen</li>
+        </ul>
+        <p>Det gör det möjligt att hitta <strong>det som är relevant istället för exakta ord</strong> (semantisk sökning).</p>
+    </div>
+
+    <div class="card analogy">
+        <p>Tänk på embeddings som en <strong>GPS-koordinat för textens betydelse</strong>. Precis som platser nära varandra har liknande koordinater, har texter med liknande betydelse liknande vektorer – oavsett vilka exakta ord som används.</p>
+    </div>
+
+    <div class="card warning">
+        <p><strong>OBS:</strong> Oftast omvandlas inte ett helt dokument som en enda vektor, utan dokumentet delas upp i <strong>mindre delar (chunks)</strong> som var och en får sin vektor. Vektorerna har typiskt <strong>några hundra till några tusen dimensioner</strong>.</p>
+    </div>
+
     <h3>MCP (Model Context Protocol)</h3>
     <div class="card key-concept">
-        <p><strong>MCP</strong> är ett standardiserat protokoll för hur verktyg exponeras till LLM:er. Det kan liknas vid ett "USB-gränssnitt" – det ger en gemensam standard för hur verktyg kopplas till AI-modeller, oavsett vilken modell eller verktyg det handlar om.</p>
+        <p><strong>MCP</strong> är ett standardiserat protokoll för hur verktyg exponeras till LLM:er. Det kan liknas vid ett "USB-gränssnitt" – en gemensam standard för hur verktyg kopplas till AI-modeller, oavsett vilken modell eller verktyg det handlar om.</p>
+        <p><strong>Varför MCP?</strong></p>
+        <ul>
+            <li><strong>Återanvändbara verktyg:</strong> samma tools kan användas av flera agenter/modeller</li>
+            <li><strong>Tydlig arkitektur:</strong> separerar modell från integrationer</li>
+            <li><strong>Snabbare att bygga:</strong> anslut nya verktyg utan att bygga specialkopplingar varje gång</li>
+        </ul>
+    </div>
+
+    <h4>Hur MCP fungerar (översikt)</h4>
+    <table>
+        <thead><tr><th>Komponent</th><th>Roll</th></tr></thead>
+        <tbody>
+            <tr><td><strong>MCP Server</strong></td><td>Exponerar och exekverar verktygen</td></tr>
+            <tr><td><strong>MCP Client</strong></td><td>Används av agenten för att se tillgängliga verktyg och anropa dem på servern</td></tr>
+            <tr><td><strong>LLM</strong></td><td>Väljer när ett verktyg behövs och vilket</td></tr>
+        </tbody>
+    </table>
+
+    <h4>Typiska MCP-användningsfall</h4>
+    <ul>
+        <li>Koppla agent till externa system (Gmail, Slack, Notion)</li>
+        <li>Bryta ut verktygslogik till en separat tjänst</li>
+        <li>Orkestrera många verktyg i samma workflow</li>
+    </ul>
+
+    <div class="card analogy">
+        <p>MCP är som en <strong>elhub med standardiserade uttag</strong>. Modellen ("hjärnan") behöver inte veta hur varje enskild apparat fungerar internt – den ansluter via ett standardkontakt (MCP) och kan använda dem alla på samma sätt.</p>
     </div>
 
     <div class="card warning">
@@ -883,6 +1074,24 @@ Format: Numrerad lista med orsak → insikt → åtgärd.
             <textarea placeholder="Skriv ditt svar här..."></textarea>
             <button class="answer-toggle" onclick="toggleAnswer(this)">Visa svar</button>
             <div class="answer">En risk är prompt injection via verktyg: om en agent hämtar data från en extern källa (t.ex. en webbsida) kan den datan innehålla instruktioner som manipulerar LLM:en att göra något oönskat. Annan risk: verktyg kan av misstag skicka känslig intern data till en extern tjänst (dataläcka).</div>
+        </div>
+        <div class="question">
+            <p>4. Förklara vad RAG är och dess tre steg.</p>
+            <textarea placeholder="Skriv ditt svar här..."></textarea>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">Visa svar</button>
+            <div class="answer">RAG (Retrieval-Augmented Generation) är en teknik för att hämta relevanta dokument och använda dem som kontext för LLM:ens svar. (1) Retrieval – systemet söker och hämtar relevanta dokument i externa databaser. (2) Augmentation – de hämtade dokumenten kombineras med frågan i en prompt. (3) Generation – LLM:en skapar ett svar baserat på både dokumenten och frågan. Syftet: färskare info, mindre hallucinationer, spårbarhet.</div>
+        </div>
+        <div class="question">
+            <p>5. Vad är en vektordatabas och varför används den i RAG?</p>
+            <textarea placeholder="Skriv ditt svar här..."></textarea>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">Visa svar</button>
+            <div class="answer">En vektordatabas lagrar dokument som numeriska vektorer (embeddings) som representerar textens betydelse. När en sökfråga ställs omvandlas den till en liknande vektor och matchas mot lagrade vektorer. Det möjliggör semantisk sökning – att hitta relevant innehåll baserat på betydelse snarare än exakta ord. Dokument delas upp i chunks, var och en med sin vektor.</div>
+        </div>
+        <div class="question">
+            <p>6. Förklara hur MCP fungerar med hjälp av begreppen Server, Client och LLM.</p>
+            <textarea placeholder="Skriv ditt svar här..."></textarea>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">Visa svar</button>
+            <div class="answer">MCP Server exponerar och exekverar verktygen. MCP Client används av agenten för att se tillgängliga verktyg och anropa dem på servern. LLM:en är "hjärnan" som väljer när ett verktyg behövs och vilket. Fördelen med MCP: återanvändbara verktyg, tydlig arkitektur (separerar modell från integrationer), och snabbare att bygga nya kopplingar.</div>
         </div>
     </div>
 </section>
@@ -1679,6 +1888,8 @@ Format: Numrerad lista med orsak → insikt → åtgärd.
                 <tr><td>12</td><td>Visuella diagram</td><td>Flödesschema, sekvensdiagram, aktörer, beslutspunkter</td></tr>
                 <tr><td>13</td><td>Multimodalitet</td><td>Text↔speech, image↔text, video, flera datatyper in/ut</td></tr>
                 <tr><td>14</td><td>Hallucinationsmekanik</td><td>Sannolikhetsgissning, sampling, RLHF, bias, autoregressive, Common Crawl</td></tr>
+                <tr><td>15</td><td>Dummare eller smartare?</td><td>Scaffolding vs answer vending, kognitiv avlastning, djupbearbetning</td></tr>
+                <tr><td>16</td><td>Riskkategorier</td><td>Kvalitetsrisker, etiska risker, användningsrisker, ansvarsfull AI</td></tr>
             </tbody>
         </table>
     </div>
@@ -1793,6 +2004,125 @@ Format: Numrerad lista med orsak → insikt → åtgärd.
             <textarea placeholder="Skriv ditt svar här..."></textarea>
             <button class="answer-toggle" onclick="toggleAnswer(this)">Visa svar</button>
             <div class="answer">En LLM genererar en token i taget baserat på alla föregående tokens. Den har ingen intern arbetsyta – allt resonemang sker genom det som redan skrivits (context window). Genom att be modellen analysera först tvingas logiska resonemang in i context window, vilket ger modellen fler "beräkningscykler" och leder till bättre sannolikhetsstyrning för det slutliga svaret.</div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 15: BLIR VI DUMMARE ELLER SMARTARE? -->
+<!-- ============================================================ -->
+<section id="sec15">
+    <h2><span class="sec-num">15</span> Blir vi dummare eller smartare av GenAI?</h2>
+    <p>En viktig diskussionsfråga i kursen: <strong>Det beror på hur vi använder den!</strong></p>
+
+    <h3>När vi riskerar att bli "dummare"</h3>
+    <div class="card warning">
+        <ul>
+            <li><strong>Kognitiv avlastning → kognitivt bortfall:</strong> Vi tränar mindre på att formulera, resonera och minnas</li>
+            <li><strong>Sämre reflekterande tänkande:</strong> Lätt att tro att man kan mer än man faktiskt kan, för att AI:ns text låter bra</li>
+            <li><strong>Mindre djupbearbetning:</strong> Sammanfattning ersätter verklig förståelse</li>
+        </ul>
+    </div>
+
+    <h3>När vi kan bli "smartare"</h3>
+    <div class="card key-concept">
+        <ul>
+            <li><strong>Skalbar förstärkning:</strong> Snabbare överblick → mer tid till analys och beslut</li>
+            <li><strong>Stöd för nybörjare:</strong> AI kan visa expertmönster, ge feedback och exempel</li>
+            <li><strong>Produktivitetsökning:</strong> Generativ AI höjer produktivitet, särskilt för mindre erfarna</li>
+        </ul>
+    </div>
+
+    <div class="highlight-box">
+        <p><strong>Praktisk slutsats:</strong> AI gör oss smartare när den används för <strong>"scaffolding"</strong> (stöd + träning) och dummare när den används för <strong>"answer vending"</strong> (bara svar utan reflektion).</p>
+    </div>
+
+    <div class="card analogy">
+        <p>Tänk på skillnaden mellan en <strong>miniräknare</strong> och en <strong>mattelärare</strong>. Miniräknaren ger dig svaret direkt (answer vending) – du lär dig inget. Matteläraren guidar dig genom problemet steg för steg (scaffolding) – du förstår metoden och kan lösa liknande problem själv.</p>
+    </div>
+
+    <div class="quiz">
+        <h4>Testa din förståelse</h4>
+        <div class="question">
+            <p>1. Vad är skillnaden mellan "scaffolding" och "answer vending" när det gäller AI-användning?</p>
+            <textarea placeholder="Skriv ditt svar här..."></textarea>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">Visa svar</button>
+            <div class="answer">Scaffolding innebär att AI används som stöd och träning – den hjälper dig förstå och lära, t.ex. genom att förklara steg för steg eller ge feedback. Answer vending innebär att AI bara levererar färdiga svar utan att användaren reflekterar eller lär sig. Scaffolding gör oss smartare, answer vending riskerar att göra oss dummare.</div>
+        </div>
+        <div class="question">
+            <p>2. Vilka risker finns med hög AI-användning ur ett kognitivt perspektiv?</p>
+            <textarea placeholder="Skriv ditt svar här..."></textarea>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">Visa svar</button>
+            <div class="answer">Kognitiv avlastning kan leda till kognitivt bortfall – vi tränar mindre på att formulera, resonera och minnas. Vi riskerar sämre reflekterande tänkande (tror vi kan mer än vi kan, för att AI:ns text låter bra) och mindre djupbearbetning (sammanfattning ersätter verklig förståelse).</div>
+        </div>
+        <div class="question">
+            <p>3. I vilka situationer kan GenAI göra oss smartare?</p>
+            <textarea placeholder="Skriv ditt svar här..."></textarea>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">Visa svar</button>
+            <div class="answer">När den används för scaffolding: skalbar förstärkning (snabbare överblick ger mer tid till analys), stöd för nybörjare (visa expertmönster, ge feedback), och produktivitetsökning särskilt för mindre erfarna. Nyckeln är att använda AI som ett lärverktyg, inte som en svarsmaskin.</div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 16: RISKKATEGORIER -->
+<!-- ============================================================ -->
+<section id="sec16">
+    <h2><span class="sec-num">16</span> Riskkategorier för GenAI</h2>
+    <p>Föreläsningen delar in risker med GenAI i tre kategorier. Att kunna skilja på dessa är viktigt på tentan.</p>
+
+    <h3>1. Risker kopplade till kvalitet</h3>
+    <div class="card warning">
+        <ul>
+            <li><strong>Hallucinationer:</strong> AI fyller i luckor som om de vore fakta</li>
+            <li><strong>Förlorad kontext:</strong> Viktiga nyanser filtreras bort vid sammanfattning</li>
+            <li><strong>Överförenkling:</strong> Komplexa frågor reduceras för mycket</li>
+            <li><strong>Partiskhet (bias):</strong> Snedvridningar från träningsdata eller källor</li>
+        </ul>
+    </div>
+
+    <h3>2. Etiska och organisatoriska risker</h3>
+    <div class="card warning">
+        <ul>
+            <li><strong>Integritet:</strong> Känslig eller personlig data sammanfattas felaktigt eller sprids</li>
+            <li><strong>Sekretess:</strong> Information används på fel sätt eller skickas till extern tjänst</li>
+            <li><strong>Lagar och regler:</strong> Svårare att garantera och efterfölja när AI automatiserar beslut</li>
+        </ul>
+    </div>
+
+    <h3>3. Risker kopplade till användning</h3>
+    <div class="card warning">
+        <ul>
+            <li><strong>Överförtroende:</strong> AI-output behandlas som sanning utan granskning</li>
+            <li><strong>Otydligt ansvar:</strong> Vem äger beslutet när AI var involverad?</li>
+            <li><strong>Brist på spårbarhet:</strong> Svårt att se vilka källor som användes</li>
+            <li><strong>Automatisering utan kontroll:</strong> i högriskbeslut kan detta få allvarliga konsekvenser</li>
+        </ul>
+    </div>
+
+    <h3>Principer för ansvarsfull användning</h3>
+    <div class="card key-concept">
+        <ul>
+            <li><strong>Human-in-the-loop</strong> i kritiska steg</li>
+            <li><strong>Tydliga instruktioner</strong> och begränsningar för vad AI får göra</li>
+            <li><strong>Källor, transparens och verifiering</strong> – visa var informationen kom ifrån</li>
+            <li><strong>AI som beslutsstöd</strong> – inte beslutsfattare</li>
+        </ul>
+    </div>
+
+    <div class="quiz">
+        <h4>Testa din förståelse</h4>
+        <div class="question">
+            <p>1. Nämn en risk från varje kategori (kvalitet, etik, användning).</p>
+            <textarea placeholder="Skriv ditt svar här..."></textarea>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">Visa svar</button>
+            <div class="answer">Kvalitet: Hallucinationer – AI fyller i luckor med påhittad information. Etik: Integritet – känslig data sammanfattas felaktigt och skickas vidare. Användning: Överförtroende – AI-output behandlas som sanning utan kritisk granskning.</div>
+        </div>
+        <div class="question">
+            <p>2. Varför bör AI användas som beslutsstöd och inte som beslutsfattare?</p>
+            <textarea placeholder="Skriv ditt svar här..."></textarea>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">Visa svar</button>
+            <div class="answer">AI kan inte garantera att dess output är korrekt (hallucinationer), kan inte ta ansvar för beslut, och saknar kontext utanför texten (organisationspolitik, etiska överväganden). Människan måste stanna i loopen för att granska, verifiera och ta ansvar – särskilt vid högriskbeslut.</div>
         </div>
     </div>
 </section>
