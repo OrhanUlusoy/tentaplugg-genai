@@ -290,6 +290,8 @@
     <a href="#sec10"><span class="nav-num">10</span> Säkerhet & Governance</a>
     <a href="#sec11"><span class="nav-num">11</span> Processdesign</a>
     <a href="#sec12"><span class="nav-num">12</span> Visuella diagram</a>
+    <a href="#sec13"><span class="nav-num">13</span> Multimodalitet</a>
+    <a href="#sec14"><span class="nav-num">14</span> Hallucinationsmekanik</a>
 </nav>
 
 <!-- PROGRESS BAR -->
@@ -360,12 +362,16 @@
 
     <h3>Begränsningar & Risker</h3>
 
-    <div class="card warning">
-        <p><strong>Hallucinationer:</strong> LLM:er kan generera text som <em>låter korrekt men är helt påhittad</em>. Modellen "vet" inte vad som är sant – den producerar det som är statistiskt sannolikt. Det kan leda till felaktiga fakta, påhittade källor och fabricerade svar.</p>
+    <div class="card key-concept">
+        <p><strong>Autoregressive arkitektur:</strong> En LLM genererar <em>en token (ord/del av ord) i taget</em>. Den har ingen intern arbetsyta – allt resonemang sker genom de tokens som redan skrivits. Därför ger "tänk steg för steg" bättre svar: det tvingar modellen att lägga sina resonemang i context window innan den ger slutsvaret.</p>
     </div>
 
     <div class="card warning">
-        <p><strong>Bias (partiskhet):</strong> Eftersom modellen tränats på data från internet, speglar den de fördomar och snedvridningar som finns i träningsdatan. Det kan leda till diskriminerande, stereotypiserande eller orättvisa resultat.</p>
+        <p><strong>Hallucinationer:</strong> LLM:er kan generera text som <em>låter korrekt men är helt påhittad</em>. Modellen "vet" inte vad som är sant – den producerar det som är statistiskt sannolikt. En LLM "ljuger" inte medvetet – den prioriterar att meningen <em>låter rätt</em> framför att den <em>är rätt</em>. Se <a href="#sec14" style="color:var(--accent)">sektion 14</a> för djupare mekanik.</p>
+    </div>
+
+    <div class="card warning">
+        <p><strong>Bias (partiskhet):</strong> Modellen tränas på Common Crawl (internet), som är tungt viktat mot västerländska perspektiv och engelska. Bias uppstår genom: <strong>underrepresentation</strong> (vissa grupper/språk dominerar), <strong>mönsterförstärkning</strong> (statistiska stereotyper förstärks) och <strong>RLHF-filter</strong> (mänsklig feedback från en homogen grupp injicerar specifika värderingar).</p>
     </div>
 
     <div class="card warning">
@@ -465,15 +471,43 @@
 
     <h3>MEEPO-ramverket</h3>
     <div class="card key-concept">
-        <p><strong>MEEPO</strong> är ett annat användbart ramverk:</p>
+        <p><strong>MEEPO</strong> är ett strukturerat prompt-ramverk från kursen:</p>
         <ul>
-            <li><strong>M – Mission:</strong> Vad är uppgiften?</li>
-            <li><strong>E – Examples:</strong> Ge exempel på önskat resultat (few-shot)</li>
-            <li><strong>E – Exclusions:</strong> Vad ska modellen INTE göra?</li>
-            <li><strong>P – Persona:</strong> Vilken roll ska modellen spela?</li>
-            <li><strong>O – Output format:</strong> Hur ska svaret formateras?</li>
+            <li><strong>M – Meta info:</strong> Ge bakgrund och situation. Vad ledde till uppgiften? Hjälp modellen förstå helheten.</li>
+            <li><strong>E – Execution:</strong> Vad ska modellen göra? Använd aktiva verb ("sammanfatta", "skriv", "jämför"). Var specifik.</li>
+            <li><strong>E – Eyes & Ears:</strong> Vem är målgruppen? Beskriv mottagarens roll, expertis och förväntningar.</li>
+            <li><strong>P – Persona:</strong> Vilken ton, stil eller karaktär? (professionell, informell, empatisk). Vem ska modellen "tala som"?</li>
+            <li><strong>O – Output:</strong> Vilket format vill du ha? (lista, tabell, JSON, e-post). Ange längd och formateringspreferenser.</li>
         </ul>
     </div>
+
+    <h3>Delimiters – Strukturera din prompt</h3>
+    <div class="card key-concept">
+        <p>Använd <strong>delimiters</strong> för att tydligt separera delar av din prompt åt modellen:</p>
+        <ul>
+            <li><strong>Hashtags</strong> för rubriknivåer: <code style="color:var(--accent)"># Nivå 1</code>, <code style="color:var(--accent)">## Nivå 2</code></li>
+            <li><strong>Backticks</strong> för kod: <code style="color:var(--accent)">```kod här```</code></li>
+            <li><strong>Trippla citattecken</strong> för textblock: <code style="color:var(--accent)">"""text"""</code></li>
+            <li><strong>XML-taggar</strong> för struktur: <code style="color:var(--accent)">&lt;kontext&gt;...&lt;/kontext&gt;</code>, <code style="color:var(--accent)">&lt;uppgift&gt;...&lt;/uppgift&gt;</code></li>
+        </ul>
+    </div>
+
+    <div class="card analogy">
+        <p>Delimiters är som <strong>rubriker och kapitelindelning i en bok</strong>. Utan dem måste läsaren (LLM:en) gissa var en del slutar och nästa börjar – med dem blir strukturen kristallklar.</p>
+    </div>
+
+    <h3>Fler prompt-strategier (från föreläsningen)</h3>
+    <table>
+        <thead><tr><th>Strategi</th><th>Beskrivning</th><th>Exempel</th></tr></thead>
+        <tbody>
+            <tr><td><strong>Tydliga instruktioner</strong></td><td>Var specifik med vad, hur, för vem, hur långt</td><td>"Skriv en elevator pitch, max 100 ord, för en fintech-investerare"</td></tr>
+            <tr><td><strong>Ange ton/stil</strong></td><td>Berätta vilken ton resultatet ska ha</td><td>"Skriv som en jurist, prioritera juridisk korrekthet"</td></tr>
+            <tr><td><strong>Ange output-format</strong></td><td>Specificera format: lista, tabell, JSON, markdown</td><td>"Ge svaret som en numrerad lista i markdown"</td></tr>
+            <tr><td><strong>Ge modellen tid att tänka</strong></td><td>Be modellen bryta ner steg (chain-of-thought)</td><td>"Ta tid att tänka och bryt ner varje steg"</td></tr>
+            <tr><td><strong>Dela upp komplexa uppgifter</strong></td><td>Bryt ner i deluppgifter istället för en stor prompt</td><td>"Först: identifiera roller. Sedan: uppskatta tid per roll."</td></tr>
+            <tr><td><strong>Ge exempel (few-shot)</strong></td><td>Visa mönstret istället för att bara beskriva det</td><td>Se few-shot-exemplet ovan</td></tr>
+        </tbody>
+    </table>
 
     <div class="card analogy">
         <p>COSTAR och MEEPO är som <strong>checklistor innan en flygning</strong>. En pilot hoppar aldrig över checklistan – den säkerställer att inget viktigt glöms. På samma sätt hjälper dessa ramverk dig att inte glömma viktiga detaljer när du formulerar prompts.</p>
@@ -746,6 +780,14 @@ Format: Numrerad lista med orsak → insikt → åtgärd.
         <p>En LLM utan verktyg är som en <strong>läkare utan instrument</strong>. Läkaren har kunskapen att diagnostisera, men utan stetoskop, blodprover och röntgen kan hen inte undersöka patienten ordentligt. Verktygen ger LLM:en förmåga att "undersöka" och "agera" i verkligheten.</p>
     </div>
 
+    <div class="card key-concept">
+        <p><strong>Viktigt:</strong> Modellen kör INTE verktyget själv. Den <em>föreslår ett anrop</em> ("kalla på search_web med query X"). Det är <strong>systemet runt modellen</strong> som faktiskt exekverar anropet och skickar tillbaka resultatet. Sedan använder modellen resultatet för nästa steg.</p>
+    </div>
+
+    <div class="card warning">
+        <p><strong>Tool-output = untrusted input:</strong> Verktygsresultat kan vara <em>fel, ofullständiga eller manipulerade</em>. Agenten ska <strong>använda data, inte lyda data</strong>. Praktiskt innebär det: begränsa behörigheter (least privilege), validera format och källor, logga steg, och ha human-in-the-loop vid riskfyllda actions (skicka mejl, radera data, köpa saker).</p>
+    </div>
+
     <h3>Hur fungerar tools i praktiken?</h3>
     <div class="diagram-container">
         <svg width="700" height="300" viewBox="0 0 700 300">
@@ -856,7 +898,7 @@ Format: Numrerad lista med orsak → insikt → åtgärd.
         <div class="col-a">
             <h4 style="color: var(--accent);">🗣️ Vanlig LLM / Chatbot</h4>
             <ul>
-                <li>Reagerar på en prompt</li>
+                <li><strong>Svarar</strong> på frågor</li>
                 <li>Ger ett svar och är klar</li>
                 <li>Inget minne mellan frågor*</li>
                 <li>Kan inte utföra handlingar</li>
@@ -866,13 +908,18 @@ Format: Numrerad lista med orsak → insikt → åtgärd.
         <div class="col-b">
             <h4 style="color: var(--accent2);">🤖 AI-agent</h4>
             <ul>
-                <li>Tar emot ett mål</li>
+                <li><strong>Genomför</strong> ett arbetsflöde</li>
                 <li>Planerar steg för att nå målet</li>
                 <li>Använder verktyg aktivt</li>
                 <li>Utvärderar resultat och justerar</li>
-                <li>Arbetar iterativt tills målet nås</li>
+                <li>Återkommer med resultat (och logg/underlag)</li>
             </ul>
         </div>
+    </div>
+
+    <div class="card key-concept">
+        <p><strong>Tänk-fråga:</strong> När du chattar med ChatGPT/Claude/Gemini – är det en LLM eller en agent?</p>
+        <p><strong>Svar: Agent.</strong> Det är en LLM som är tränad för konversation och har ett <em>system byggt runt sig</em> som kan använda en mängd olika verktyg och ofta arbetar i flera steg. Skillnaden: <em>"chat" = text → "agent" = text till handling.</em></p>
     </div>
 
     <div class="card analogy">
@@ -991,21 +1038,43 @@ Format: Numrerad lista med orsak → insikt → åtgärd.
     </div>
 
     <h3>Temperature & Top-p</h3>
+
     <div class="card key-concept">
-        <p>Dessa parametrar styr hur "kreativ" vs "förutsägbar" modellens output blir:</p>
+        <p><strong>Temperature</strong> styr hur slumpmässig modellen är – hur mycket den kan avvika från det mest sannolika ordet:</p>
         <ul>
-            <li><strong>Temperature:</strong> Låg (0–0.3) = fokuserat, förutsägbart. Hög (0.7–1.0) = kreativt, varierat.</li>
-            <li><strong>Top-p:</strong> Begränsar urvalet av möjliga nästa ord. Lågt = säkrare val. Högt = bredare urval.</li>
+            <li><strong>Låg temp (0.0–0.3)</strong> → Mer deterministisk, stabil, "säkrare". Använd för: klassificering, beslutslogik, faktafrågor.</li>
+            <li><strong>Hög temp (0.7–1.0)</strong> → Mer kreativ, varierande, ibland osäker. Använd för: idégenerering, brainstorming, textskapande.</li>
         </ul>
-        <p><strong>Tumregel:</strong> För faktauppgifter → låg temperature. För kreativt skrivande → hög temperature.</p>
+    </div>
+
+    <div class="card key-concept">
+        <p><strong>Top-p</strong> kontrollerar <em>bredden på ordvalet</em> – modellen väljer bland de ord som tillsammans utgör p% av sannolikhetsmassan:</p>
+        <ul>
+            <li><strong>Högt värde (0.95–1.0)</strong> → Bredare urval av ord</li>
+            <li><strong>Lågt värde (0.5–0.8)</strong> → Mer fokuserat och konservativt</li>
+        </ul>
+    </div>
+
+    <div class="highlight-box">
+        <p><strong>Konkret Top-p-exempel (p = 0.9):</strong></p>
+        <p>"är" 40% | "blir" 30% | "var" 11% | "kan" 9% → <strong>Summa 90%</strong> (dessa 4 ord utgör top-p)</p>
+        <p>"då" 4% | Övriga 1% → <em>utanför top-p, väljs inte</em></p>
+        <p style="margin-top:8px; color:var(--accent);"><strong>Top-p = vilka alternativ finns? Temperature = hur mycket modellen avviker från det mest sannolika.</strong></p>
     </div>
 
     <h3>Guardrails</h3>
+    <div class="card key-concept">
+        <p><strong>Varför måste säkerhet in tidigt?</strong> När vi går från "chat" till "agent" går vi från <em>text till handling</em>. Utan guardrails bygger man en "snabb robot" som kan göra snabba misstag.</p>
+    </div>
+
     <p>Guardrails är <strong>säkerhetsbegränsningar</strong> som sätts på agenten för att förhindra oönskat beteende:</p>
     <ul>
-        <li>Begränsa vilka verktyg agenten får använda</li>
+        <li><strong>Least privilege</strong> – ge minsta möjliga behörighet per verktyg/agent</li>
+        <li><strong>Hantera verktygsresultat som osäkert</strong> – verktygsdata kan innehålla attacker → filtrera/sanitera/verifiera</li>
+        <li><strong>Allowlist för verktyg</strong> – definiera vad agenten FÅR göra (och vad som är förbjudet)</li>
+        <li><strong>Human-in-the-loop</strong> vid högrisk (mejl, radering, pengar)</li>
+        <li><strong>Loggning & audit</strong> – logga plan, beslut, tool-anrop och svar (för spårbarhet)</li>
         <li>Sätta max antal iterationer/steg</li>
-        <li>Kräva godkännande för känsliga åtgärder (human-in-the-loop)</li>
         <li>Validera input och output</li>
     </ul>
 
@@ -1608,8 +1677,123 @@ Format: Numrerad lista med orsak → insikt → åtgärd.
                 <tr><td>10</td><td>Säkerhet & Governance</td><td>HITL, prompt injection, dataläckor, loggning, audit trail</td></tr>
                 <tr><td>11</td><td>Processdesign</td><td>Use-case discovery, motivera val, riskhantering</td></tr>
                 <tr><td>12</td><td>Visuella diagram</td><td>Flödesschema, sekvensdiagram, aktörer, beslutspunkter</td></tr>
+                <tr><td>13</td><td>Multimodalitet</td><td>Text↔speech, image↔text, video, flera datatyper in/ut</td></tr>
+                <tr><td>14</td><td>Hallucinationsmekanik</td><td>Sannolikhetsgissning, sampling, RLHF, bias, autoregressive, Common Crawl</td></tr>
             </tbody>
         </table>
+    </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 13: MULTIMODALITET -->
+<!-- ============================================================ -->
+<section id="sec13">
+    <h2><span class="sec-num">13</span> Multimodalitet</h2>
+    <p><strong>Multimodal AI</strong> kan ta emot, förstå och skapa <strong>flera typer av data</strong> – inte bara text. Det kan vara text, ljud, bild, video etc., både som input och output.</p>
+
+    <h3>Vanliga modaliteter</h3>
+    <table>
+        <thead><tr><th>Riktning</th><th>Beskrivning</th><th>Exempel</th></tr></thead>
+        <tbody>
+            <tr><td><strong>Text → Speech</strong></td><td>Talsyntes</td><td>Röstassistenter, uppläsning</td></tr>
+            <tr><td><strong>Speech → Text</strong></td><td>Transkribering</td><td>Mötestranskription, support</td></tr>
+            <tr><td><strong>Speech → Speech</strong></td><td>Realtidsdialog</td><td>Röstassistenter</td></tr>
+            <tr><td><strong>Image → Text</strong></td><td>Bildtolkning</td><td>Tolka diagram, skärmdumpar, foton</td></tr>
+            <tr><td><strong>Text → Image</strong></td><td>Bildgenerering</td><td>Illustrationer, design, visualisering</td></tr>
+            <tr><td><strong>Text → Video/Musik</strong></td><td>Kreativt innehåll</td><td>Prototyper, content creation</td></tr>
+        </tbody>
+    </table>
+
+    <div class="card analogy">
+        <p>Multimodalitet är som en <strong>tolk som kan alla språk och format</strong>. Istället för att bara kunna läsa text, kan den "se" bilder, "höra" ljud och "skapa" i alla dessa format. Information finns inte bara i text – och dagens AI speglar det.</p>
+    </div>
+
+    <div class="card key-concept">
+        <p><strong>Varför är detta viktigt?</strong></p>
+        <ul>
+            <li>Information finns inte bara i text – bilder, ljud, video är lika viktiga</li>
+            <li>Nya användargränssnitt: röst, kamera, realtid</li>
+            <li>Agenter kan bli mer kapabla med multimodal input (t.ex. tolka en skärmdump)</li>
+        </ul>
+    </div>
+
+    <div class="quiz">
+        <h4>Testa din förståelse</h4>
+        <div class="question">
+            <p>1. Vad innebär multimodal AI?</p>
+            <textarea placeholder="Skriv ditt svar här..."></textarea>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">Visa svar</button>
+            <div class="answer">Multimodal AI kan ta emot, förstå och skapa flera typer av data – inte bara text. Det inkluderar text, bilder, ljud, video etc. som både input och output.</div>
+        </div>
+        <div class="question">
+            <p>2. Ge tre exempel på multimodala transformationer.</p>
+            <textarea placeholder="Skriv ditt svar här..."></textarea>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">Visa svar</button>
+            <div class="answer">T.ex. (1) Text → Speech (talsyntes), (2) Image → Text (tolka en bild till beskrivning), (3) Speech → Text (transkribering av möten).</div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 14: HALLUCINATIONSMEKANIK -->
+<!-- ============================================================ -->
+<section id="sec14">
+    <h2><span class="sec-num">14</span> Hallucinationsmekanik – Varför hallucinerar en LLM?</h2>
+    <p>Att förstå <em>varför</em> hallucinationer sker hjälper dig skriva bättre prompts och förstå begränsningar. Här är de fyra huvudmekanismerna:</p>
+
+    <h3>1. Gissning baserad på sannolikhet</h3>
+    <div class="card key-concept">
+        <p>Modellen maximerar sannolikheten för nästa token. Den väljer baserat på <strong>statistisk vikt, inte verifierad sanning</strong>. Om det finns luckor i kunskap fyller den i – som en JPEG-bild som zoomas för djupt: formen finns kvar men detaljerna "hallucineras" fram.</p>
+    </div>
+
+    <h3>2. Stokastisk natur (Sampling & Temperature)</h3>
+    <div class="card key-concept">
+        <p>Om vi alltid valde det mest sannolika ordet (greedy search) skulle AI:n låta repetitiv. Därför används <strong>temperature och top-p</strong> för variation. Men hög temperature ökar risken att modellen väljer en token med låg sannolikhet och börjar hallucinera.</p>
+    </div>
+
+    <h3>3. RLHF – Reinforcement Learning from Human Feedback</h3>
+    <div class="card key-concept">
+        <p>Mänskliga granskare har tränat modellen att vara <strong>artig och hjälpsam</strong>. Det skapar en tendens att modellen är <em>inställsam</em> – den vill vara till lags och premierar hjälpsamhet framför att erkänna okunskap. Modellen "hittar på" hellre än att säga "jag vet inte".</p>
+    </div>
+
+    <h3>4. Bias i träningsdata</h3>
+    <div class="card key-concept">
+        <p>LLM:ns data kommer främst från internet (Common Crawl) som är:</p>
+        <ul>
+            <li><strong>Västerländskt viktat</strong> – engelska dominerar, andra språk/perspektiv underrepresenterade</li>
+            <li><strong>Mönsterförstärkande</strong> – om "läkare" oftare kopplas till "han" i data, förstärks den stereotypen</li>
+            <li><strong>RLHF-filtrerat</strong> – mänsklig feedback från en homogen grupp injicerar specifika värderingar</li>
+        </ul>
+    </div>
+
+    <div class="card analogy">
+        <p>Hallucinationsmekaniken är som en <strong>mun till mun-historia</strong>. Originalet (träningsdata) är redan färgat av berättarnas perspektiv. Modellen försöker återberätta historien (generera text), men fyller i luckor med gissningar och anpassar berättelsen efter vad lyssnaren verkar vilja höra (RLHF). Resultatet kan låta perfekt men vara helt fel.</p>
+    </div>
+
+    <div class="highlight-box">
+        <p><strong>Minnesregel för tentan:</strong> Ifrågasätt alltid output från GenAI – Är den korrekt? Är den partisk? Vad är källan? Lär dig AI:s begränsningar för att kunna skriva bättre prompts och få bättre resultat.</p>
+    </div>
+
+    <div class="quiz">
+        <h4>Testa din förståelse</h4>
+        <div class="question">
+            <p>1. Nämn tre mekanismer som gör att en LLM hallucinerar.</p>
+            <textarea placeholder="Skriv ditt svar här..."></textarea>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">Visa svar</button>
+            <div class="answer">(1) Sannolikhetsbaserad gissning – modellen fyller i luckor med det mest sannolika, inte det sanna. (2) Stokastisk sampling/temperature – slumpmässighet i ordval ökar risken. (3) RLHF – modellen premieras för att vara hjälpsam och undviker att säga "jag vet inte".</div>
+        </div>
+        <div class="question">
+            <p>2. Varför är en LLM:s svar alltid "vinklad"? Förklara med hänvisning till träningsdata.</p>
+            <textarea placeholder="Skriv ditt svar här..."></textarea>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">Visa svar</button>
+            <div class="answer">LLM:en tränas på Common Crawl (internet) som domineras av västerländska perspektiv och engelska. Underrepresenterade grupper/språk leder till grova generaliseringar. Statistisk mönsterförstärkning gör att befintliga stereotyper förstärks. RLHF-feedback från en homogen grupp injicerar ytterligare specifika värderingar.</div>
+        </div>
+        <div class="question">
+            <p>3. Vad innebär "autoregressive arkitektur" och varför ger "tänk steg för steg" bättre svar?</p>
+            <textarea placeholder="Skriv ditt svar här..."></textarea>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">Visa svar</button>
+            <div class="answer">En LLM genererar en token i taget baserat på alla föregående tokens. Den har ingen intern arbetsyta – allt resonemang sker genom det som redan skrivits (context window). Genom att be modellen analysera först tvingas logiska resonemang in i context window, vilket ger modellen fler "beräkningscykler" och leder till bättre sannolikhetsstyrning för det slutliga svaret.</div>
+        </div>
     </div>
 </section>
 
