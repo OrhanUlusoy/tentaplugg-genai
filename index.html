@@ -1,0 +1,1677 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tentaplugg – Generativ AI & Agenter</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --surface2: #334155;
+            --accent: #38bdf8;
+            --accent2: #818cf8;
+            --accent3: #34d399;
+            --warn: #fbbf24;
+            --danger: #f87171;
+            --text: #e2e8f0;
+            --text-dim: #94a3b8;
+            --radius: 12px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+
+        /* --- NAV --- */
+        .sidebar {
+            position: fixed; top: 0; left: 0;
+            width: 280px; height: 100vh;
+            background: var(--surface);
+            border-right: 1px solid var(--surface2);
+            overflow-y: auto; padding: 24px 16px;
+            z-index: 100;
+        }
+        .sidebar h2 {
+            font-size: 1rem; color: var(--accent);
+            margin-bottom: 16px; padding-bottom: 8px;
+            border-bottom: 1px solid var(--surface2);
+        }
+        .sidebar a {
+            display: block; padding: 8px 12px; margin: 2px 0;
+            color: var(--text-dim); text-decoration: none;
+            border-radius: 8px; font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        .sidebar a:hover, .sidebar a.active {
+            background: var(--surface2); color: var(--accent);
+        }
+        .sidebar .nav-num {
+            display: inline-block; width: 24px; height: 24px;
+            text-align: center; line-height: 24px;
+            border-radius: 6px; background: var(--surface2);
+            color: var(--accent); font-size: 0.75rem;
+            margin-right: 8px; font-weight: 700;
+        }
+
+        /* --- MAIN --- */
+        .main {
+            margin-left: 280px; padding: 40px 48px 120px;
+            max-width: 960px;
+        }
+        .hero {
+            text-align: center; padding: 60px 0 40px;
+        }
+        .hero h1 {
+            font-size: 2.4rem;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 12px;
+        }
+        .hero p { color: var(--text-dim); font-size: 1.1rem; }
+
+        /* --- PROGRESS BAR --- */
+        .progress-bar-container {
+            position: fixed; top: 0; left: 280px; right: 0;
+            height: 4px; background: var(--surface2); z-index: 99;
+        }
+        .progress-bar {
+            height: 100%; width: 0%;
+            background: linear-gradient(90deg, var(--accent), var(--accent2));
+            transition: width 0.3s;
+        }
+
+        /* --- SECTIONS --- */
+        section {
+            margin-bottom: 56px;
+            animation: fadeIn 0.5s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        section h2 {
+            font-size: 1.6rem; color: var(--accent);
+            margin-bottom: 8px; display: flex; align-items: center; gap: 12px;
+        }
+        section h2 .sec-num {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 36px; height: 36px; border-radius: 10px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            color: var(--bg); font-size: 1rem; font-weight: 800;
+            flex-shrink: 0;
+        }
+        section h3 {
+            font-size: 1.15rem; color: var(--accent2);
+            margin: 24px 0 8px;
+        }
+        section p, section li {
+            color: var(--text); margin-bottom: 10px;
+        }
+        section ul, section ol { padding-left: 24px; margin-bottom: 16px; }
+
+        /* --- CARDS --- */
+        .card {
+            background: var(--surface); border: 1px solid var(--surface2);
+            border-radius: var(--radius); padding: 24px; margin: 16px 0;
+        }
+        .card.analogy {
+            border-left: 4px solid var(--warn);
+        }
+        .card.analogy::before {
+            content: '💡 Analogi'; display: block;
+            font-weight: 700; color: var(--warn);
+            margin-bottom: 8px; font-size: 0.9rem;
+        }
+        .card.key-concept {
+            border-left: 4px solid var(--accent3);
+        }
+        .card.key-concept::before {
+            content: '🔑 Nyckelkoncept'; display: block;
+            font-weight: 700; color: var(--accent3);
+            margin-bottom: 8px; font-size: 0.9rem;
+        }
+        .card.warning {
+            border-left: 4px solid var(--danger);
+        }
+        .card.warning::before {
+            content: '⚠️ Risk / Begränsning'; display: block;
+            font-weight: 700; color: var(--danger);
+            margin-bottom: 8px; font-size: 0.9rem;
+        }
+
+        /* --- DIAGRAMS --- */
+        .diagram-container {
+            background: var(--surface); border: 1px solid var(--surface2);
+            border-radius: var(--radius); padding: 24px; margin: 20px 0;
+            text-align: center; overflow-x: auto;
+        }
+        .diagram-container svg { max-width: 100%; height: auto; }
+        .diagram-label {
+            color: var(--text-dim); font-size: 0.85rem;
+            text-align: center; margin-top: 8px; font-style: italic;
+        }
+
+        /* --- QUIZ --- */
+        .quiz {
+            background: linear-gradient(135deg, rgba(56,189,248,0.08), rgba(129,140,248,0.08));
+            border: 1px solid var(--accent);
+            border-radius: var(--radius); padding: 24px; margin: 24px 0;
+        }
+        .quiz h4 {
+            color: var(--accent); margin-bottom: 12px;
+            font-size: 1rem;
+        }
+        .quiz h4::before { content: '🧠 '; }
+        .quiz .question {
+            margin-bottom: 16px; padding: 16px;
+            background: var(--surface); border-radius: 8px;
+        }
+        .quiz .question p { margin-bottom: 10px; font-weight: 600; }
+        .quiz textarea {
+            width: 100%; min-height: 60px; padding: 12px;
+            background: var(--bg); color: var(--text);
+            border: 1px solid var(--surface2); border-radius: 8px;
+            resize: vertical; font-family: inherit; font-size: 0.9rem;
+        }
+        .quiz textarea:focus { outline: none; border-color: var(--accent); }
+        .quiz .answer-toggle {
+            display: inline-block; margin-top: 8px; padding: 6px 16px;
+            background: var(--accent); color: var(--bg);
+            border: none; border-radius: 6px; cursor: pointer;
+            font-size: 0.85rem; font-weight: 600;
+            transition: background 0.2s;
+        }
+        .quiz .answer-toggle:hover { background: var(--accent2); }
+        .quiz .answer {
+            display: none; margin-top: 10px; padding: 12px;
+            background: rgba(52,211,153,0.1); border-left: 3px solid var(--accent3);
+            border-radius: 0 8px 8px 0; color: var(--accent3);
+            font-size: 0.9rem;
+        }
+        .quiz .answer.show { display: block; }
+
+        /* --- TABLE --- */
+        table {
+            width: 100%; border-collapse: collapse; margin: 16px 0;
+        }
+        th, td {
+            padding: 12px 16px; text-align: left;
+            border-bottom: 1px solid var(--surface2);
+        }
+        th {
+            background: var(--surface); color: var(--accent);
+            font-size: 0.85rem; text-transform: uppercase;
+        }
+        td { font-size: 0.9rem; }
+
+        /* --- COMPARISON --- */
+        .comparison {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+            margin: 16px 0;
+        }
+        .comparison > div {
+            padding: 20px; border-radius: var(--radius);
+        }
+        .comparison .col-a {
+            background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.3);
+        }
+        .comparison .col-b {
+            background: rgba(129,140,248,0.1); border: 1px solid rgba(129,140,248,0.3);
+        }
+        .comparison h4 { margin-bottom: 8px; }
+
+        /* --- SCROLL HIGHLIGHT --- */
+        .highlight-box {
+            background: rgba(56,189,248,0.05);
+            border-radius: var(--radius); padding: 16px 20px;
+            margin: 12px 0;
+        }
+
+        /* --- CODE BLOCK --- */
+        .code-example {
+            background: #0d1117; border: 1px solid var(--surface2);
+            border-radius: 8px; padding: 16px; margin: 12px 0;
+            font-family: 'Cascadia Code', 'Fira Code', monospace;
+            font-size: 0.85rem; overflow-x: auto;
+            color: #c9d1d9; white-space: pre-wrap;
+        }
+        .code-example .keyword { color: #ff7b72; }
+        .code-example .string { color: #a5d6ff; }
+        .code-example .comment { color: #8b949e; }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 900px) {
+            .sidebar { display: none; }
+            .main { margin-left: 0; padding: 24px 16px 80px; }
+            .progress-bar-container { left: 0; }
+            .comparison { grid-template-columns: 1fr; }
+        }
+
+        /* --- SCORE TRACKER --- */
+        .score-panel {
+            position: fixed; bottom: 20px; right: 20px;
+            background: var(--surface); border: 1px solid var(--surface2);
+            border-radius: var(--radius); padding: 16px 20px;
+            z-index: 100; box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
+        .score-panel span {
+            color: var(--accent); font-weight: 700; font-size: 1.2rem;
+        }
+
+        /* Flowchart text */
+        .fc-box {
+            fill: var(--surface2); stroke: var(--accent); stroke-width: 1.5;
+            rx: 8; ry: 8;
+        }
+        .fc-text { fill: var(--text); font-size: 13px; font-family: 'Segoe UI', sans-serif; }
+        .fc-arrow { stroke: var(--accent); stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
+        .fc-label { fill: var(--text-dim); font-size: 11px; font-family: 'Segoe UI', sans-serif; }
+    </style>
+</head>
+<body>
+
+<!-- SIDEBAR NAV -->
+<nav class="sidebar">
+    <h2>📚 Tentaplugg</h2>
+    <a href="#sec1"><span class="nav-num">1</span> Vad är Generativ AI?</a>
+    <a href="#sec2"><span class="nav-num">2</span> Strukturerad Prompting</a>
+    <a href="#sec3"><span class="nav-num">3</span> Kunskapstransformation</a>
+    <a href="#sec4"><span class="nav-num">4</span> Arbeta med Data & AI</a>
+    <a href="#sec5"><span class="nav-num">5</span> Verktyg (Tools)</a>
+    <a href="#sec6"><span class="nav-num">6</span> Vad är en AI-agent?</a>
+    <a href="#sec7"><span class="nav-num">7</span> Agentdesign</a>
+    <a href="#sec8"><span class="nav-num">8</span> Multi-agent-arkitekturer</a>
+    <a href="#sec9"><span class="nav-num">9</span> Agentsamverkan</a>
+    <a href="#sec10"><span class="nav-num">10</span> Säkerhet & Governance</a>
+    <a href="#sec11"><span class="nav-num">11</span> Processdesign</a>
+    <a href="#sec12"><span class="nav-num">12</span> Visuella diagram</a>
+</nav>
+
+<!-- PROGRESS BAR -->
+<div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
+
+<!-- MAIN CONTENT -->
+<div class="main">
+
+<div class="hero">
+    <h1>Tentaplugg: Generativ AI & Agenter</h1>
+    <p>En interaktiv studiesida – läs, förstå, testa dig själv</p>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 1: VAD ÄR GENERATIV AI? -->
+<!-- ============================================================ -->
+<section id="sec1">
+    <h2><span class="sec-num">1</span> Vad är Generativ AI?</h2>
+    <p>Generativ AI (GenAI) syftar på AI-system som kan <strong>skapa nytt innehåll</strong> – text, bilder, kod, musik – baserat på mönster de lärt sig från stora mängder träningsdata. Den mest kända typen är <strong>Large Language Models (LLMs)</strong>, som GPT, Claude och Gemini.</p>
+
+    <h3>Hur fungerar en LLM?</h3>
+    <p>En LLM är tränad på enorma mängder text från internet, böcker och andra källor. Den lär sig statistiska mönster för hur ord och meningar hänger ihop. När du ställer en fråga, <strong>förutsäger modellen det mest sannolika nästa ordet</strong>, gång på gång, tills ett svar är färdigt.</p>
+
+    <div class="card analogy">
+        <p>Tänk på en LLM som en <strong>extremt beläst papegoja</strong>. Den har läst allt som finns och kan sätta ihop meningar som låter övertygande – men den <em>förstår</em> inte vad den säger på samma sätt som en människa gör. Den är jättebra på att hitta mönster, men den har ingen egen upplevelse eller förståelse av världen.</p>
+    </div>
+
+    <div class="diagram-container">
+        <svg width="700" height="180" viewBox="0 0 700 180">
+            <defs>
+                <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#38bdf8"/>
+                </marker>
+            </defs>
+            <!-- Training data -->
+            <rect x="10" y="50" width="130" height="60" class="fc-box"/>
+            <text x="75" y="77" class="fc-text" text-anchor="middle">Träningsdata</text>
+            <text x="75" y="93" class="fc-text" text-anchor="middle" font-size="11">(texter, kod, böcker)</text>
+            <!-- Arrow -->
+            <line x1="140" y1="80" x2="190" y2="80" class="fc-arrow"/>
+            <!-- Model -->
+            <rect x="190" y="40" width="140" height="80" rx="40" ry="40" fill="none" stroke="#818cf8" stroke-width="2"/>
+            <text x="260" y="77" class="fc-text" text-anchor="middle" fill="#818cf8">LLM-modell</text>
+            <text x="260" y="93" class="fc-text" text-anchor="middle" font-size="11" fill="#818cf8">Mönsterinlärning</text>
+            <!-- Arrow -->
+            <line x1="330" y1="80" x2="380" y2="80" class="fc-arrow"/>
+            <!-- Prompt -->
+            <rect x="380" y="50" width="120" height="60" class="fc-box"/>
+            <text x="440" y="77" class="fc-text" text-anchor="middle">Din prompt</text>
+            <text x="440" y="93" class="fc-text" text-anchor="middle" font-size="11">(fråga/instruktion)</text>
+            <!-- Arrow -->
+            <line x1="500" y1="80" x2="550" y2="80" class="fc-arrow"/>
+            <!-- Output -->
+            <rect x="550" y="50" width="130" height="60" class="fc-box" style="stroke: #34d399;"/>
+            <text x="615" y="77" class="fc-text" text-anchor="middle" fill="#34d399">Genererat svar</text>
+            <text x="615" y="93" class="fc-text" text-anchor="middle" font-size="11" fill="#34d399">(text, kod, etc.)</text>
+        </svg>
+        <div class="diagram-label">Figur 1: Översikt över hur en LLM fungerar – från träningsdata till genererat svar</div>
+    </div>
+
+    <h3>Styrkor</h3>
+    <ul>
+        <li><strong>Snabb textgenerering</strong> – kan producera utkast, sammanfattningar, kod på sekunder</li>
+        <li><strong>Bred kunskap</strong> – har "läst" enorma mängder information från många domäner</li>
+        <li><strong>Flexibilitet</strong> – kan anpassa stil, ton och format efter instruktioner</li>
+        <li><strong>Kreativ assistent</strong> – bra på brainstorming, omformuleringar, idégenerering</li>
+    </ul>
+
+    <h3>Begränsningar & Risker</h3>
+
+    <div class="card warning">
+        <p><strong>Hallucinationer:</strong> LLM:er kan generera text som <em>låter korrekt men är helt påhittad</em>. Modellen "vet" inte vad som är sant – den producerar det som är statistiskt sannolikt. Det kan leda till felaktiga fakta, påhittade källor och fabricerade svar.</p>
+    </div>
+
+    <div class="card warning">
+        <p><strong>Bias (partiskhet):</strong> Eftersom modellen tränats på data från internet, speglar den de fördomar och snedvridningar som finns i träningsdatan. Det kan leda till diskriminerande, stereotypiserande eller orättvisa resultat.</p>
+    </div>
+
+    <div class="card warning">
+        <p><strong>Ingen verklig förståelse:</strong> En LLM resonerar inte som en människa. Den manipulerar symboler och mönster – den har ingen medvetenhet, inget minne av verkliga upplevelser och ingen förmåga att verifiera sina egna påståenden mot verkligheten.</p>
+    </div>
+
+    <div class="card warning">
+        <p><strong>Begränsat kunskapsfönster (cut-off):</strong> Modellen vet inget om händelser efter sitt träningsdatum om den inte fått tillgång till verktyg som kan söka aktuell information.</p>
+    </div>
+
+    <div class="card analogy">
+        <p>Hallucinationer är som en <strong>student som aldrig säger "jag vet inte"</strong>. I stället hittar studenten på ett svar som låter bra. Det kan vara rätt ibland, men ibland är det totalt fel – och det är omöjligt att veta skillnaden utan att dubbelkolla.</p>
+    </div>
+
+    <div class="quiz">
+        <h4>Testa din förståelse</h4>
+        <div class="question">
+            <p>1. Vad innebär det att en LLM "hallucinerar"?</p>
+            <textarea placeholder="Skriv ditt svar här..."></textarea>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">Visa svar</button>
+            <div class="answer">En hallucination innebär att LLM:en genererar ett svar som låter trovärdigt och korrekt, men som faktiskt är påhittat eller felaktigt. Det sker för att modellen inte "vet" vad som är sant – den förutsäger bara det mest sannolika nästa ordet baserat på mönster i sin träningsdata.</div>
+        </div>
+        <div class="question">
+            <p>2. Ge ett exempel på hur bias i en LLM kan uppstå.</p>
+            <textarea placeholder="Skriv ditt svar här..."></textarea>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">Visa svar</button>
+            <div class="answer">Om träningsdatan innehåller fler texter som associerar t.ex. "programmerare" med män, kan modellen omedvetet reproducera den stereotypen. Bias uppstår alltså för att modellen speglar de snedvridningar som finns i den data den tränats på.</div>
+        </div>
+        <div class="question">
+            <p>3. Varför är det viktigt att förstå att en LLM inte har "verklig förståelse"?</p>
+            <textarea placeholder="Skriv ditt svar här..."></textarea>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">Visa svar</button>
+            <div class="answer">Eftersom LLM:en inte förstår innebörden av det den säger kan den inte bedöma om ett svar är korrekt, etiskt lämpligt eller relevant. Det betyder att människan alltid måste granska och verifiera resultat – man kan inte lita blint på outputen.</div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 2: STRUKTURERAD PROMPTING -->
+<!-- ============================================================ -->
+<section id="sec2">
+    <h2><span class="sec-num">2</span> Strukturerad Prompting</h2>
+    <p>Kvaliteten på det svar du får från en LLM beror direkt på <strong>hur du formulerar din prompt</strong>. Strukturerad prompting handlar om att använda beprövade tekniker och ramverk för att ge tydliga, effektiva instruktioner.</p>
+
+    <h3>Zero-shot, One-shot och Few-shot</h3>
+    <table>
+        <thead><tr><th>Teknik</th><th>Beskrivning</th><th>När man använder det</th></tr></thead>
+        <tbody>
+            <tr><td><strong>Zero-shot</strong></td><td>Ge modellen en uppgift <em>utan</em> något exempel.</td><td>Enkla, väldefinierade uppgifter</td></tr>
+            <tr><td><strong>One-shot</strong></td><td>Ge <em>ett</em> exempel på önskat resultat innan uppgiften.</td><td>När du vill visa format/stil</td></tr>
+            <tr><td><strong>Few-shot</strong></td><td>Ge <em>flera</em> exempel (2–5) innan uppgiften.</td><td>Komplexa uppgifter, specifikt format</td></tr>
+        </tbody>
+    </table>
+
+    <div class="card analogy">
+        <p>Tänk på det som att ge instruktioner till en ny anställd. <strong>Zero-shot</strong> = "Skriv ett mejl till kunden." <strong>One-shot</strong> = "Här är ett exempel på ett kundmejl, skriv ett liknande." <strong>Few-shot</strong> = "Här är tre exempel på kundmejl i vår stil – nu skriv ett nytt i samma format."</p>
+    </div>
+
+    <h3>COSTAR-ramverket</h3>
+    <p>COSTAR är ett strukturerat ramverk för att bygga effektiva prompts:</p>
+
+    <div class="diagram-container">
+        <svg width="660" height="380" viewBox="0 0 660 380">
+            <defs>
+                <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" style="stop-color:#38bdf8;stop-opacity:0.2"/>
+                    <stop offset="100%" style="stop-color:#818cf8;stop-opacity:0.2"/>
+                </linearGradient>
+            </defs>
+            <!-- C -->
+            <rect x="10" y="10" width="640" height="50" rx="8" fill="url(#grad1)" stroke="#38bdf8" stroke-width="1"/>
+            <text x="40" y="40" fill="#38bdf8" font-weight="bold" font-size="15" font-family="Segoe UI">C – Context</text>
+            <text x="180" y="40" fill="#e2e8f0" font-size="13" font-family="Segoe UI">Ge bakgrundsinformation och sammanhang för uppgiften</text>
+            <!-- O -->
+            <rect x="10" y="70" width="640" height="50" rx="8" fill="url(#grad1)" stroke="#818cf8" stroke-width="1"/>
+            <text x="40" y="100" fill="#818cf8" font-weight="bold" font-size="15" font-family="Segoe UI">O – Objective</text>
+            <text x="180" y="100" fill="#e2e8f0" font-size="13" font-family="Segoe UI">Vad vill du att modellen ska göra? Vad är målet?</text>
+            <!-- S -->
+            <rect x="10" y="130" width="640" height="50" rx="8" fill="url(#grad1)" stroke="#34d399" stroke-width="1"/>
+            <text x="40" y="160" fill="#34d399" font-weight="bold" font-size="15" font-family="Segoe UI">S – Style</text>
+            <text x="180" y="160" fill="#e2e8f0" font-size="13" font-family="Segoe UI">Vilken stil eller ton ska svaret ha? (formellt, akademiskt, enkelt?)</text>
+            <!-- T -->
+            <rect x="10" y="190" width="640" height="50" rx="8" fill="url(#grad1)" stroke="#fbbf24" stroke-width="1"/>
+            <text x="40" y="220" fill="#fbbf24" font-weight="bold" font-size="15" font-family="Segoe UI">T – Tone</text>
+            <text x="180" y="220" fill="#e2e8f0" font-size="13" font-family="Segoe UI">Vilken känsla? (professionellt, vänligt, neutralt?)</text>
+            <!-- A -->
+            <rect x="10" y="250" width="640" height="50" rx="8" fill="url(#grad1)" stroke="#f87171" stroke-width="1"/>
+            <text x="40" y="280" fill="#f87171" font-weight="bold" font-size="15" font-family="Segoe UI">A – Audience</text>
+            <text x="180" y="280" fill="#e2e8f0" font-size="13" font-family="Segoe UI">Vem är mottagaren? (experter, nybörjare, chefer?)</text>
+            <!-- R -->
+            <rect x="10" y="310" width="640" height="50" rx="8" fill="url(#grad1)" stroke="#fb923c" stroke-width="1"/>
+            <text x="40" y="340" fill="#fb923c" font-weight="bold" font-size="15" font-family="Segoe UI">R – Response</text>
+            <text x="180" y="340" fill="#e2e8f0" font-size="13" font-family="Segoe UI">Vilket format vill du ha? (lista, tabell, steg-för-steg, JSON?)</text>
+        </svg>
+        <div class="diagram-label">Figur 2: COSTAR-ramverket – sex delar för en strukturerad prompt</div>
+    </div>
+
+    <h3>MEEPO-ramverket</h3>
+    <div class="card key-concept">
+        <p><strong>MEEPO</strong> är ett annat användbart ramverk:</p>
+        <ul>
+            <li><strong>M – Mission:</strong> Vad är uppgiften?</li>
+            <li><strong>E – Examples:</strong> Ge exempel på önskat resultat (few-shot)</li>
+            <li><strong>E – Exclusions:</strong> Vad ska modellen INTE göra?</li>
+            <li><strong>P – Persona:</strong> Vilken roll ska modellen spela?</li>
+            <li><strong>O – Output format:</strong> Hur ska svaret formateras?</li>
+        </ul>
+    </div>
+
+    <div class="card analogy">
+        <p>COSTAR och MEEPO är som <strong>checklistor innan en flygning</strong>. En pilot hoppar aldrig över checklistan – den säkerställer att inget viktigt glöms. På samma sätt hjälper dessa ramverk dig att inte glömma viktiga detaljer när du formulerar prompts.</p>
+    </div>
+
+    <h3>Exempel: En prompt med COSTAR</h3>
+    <div class="code-example"><span class="comment">// Context:</span>
+Vi är ett e-handelsföretag som säljer heminredning. Vi har fått
+många returärenden senaste kvartalet.
+
+<span class="comment">// Objective:</span>
+Analysera de tre vanligaste returorsakerna och föreslå åtgärder.
+
+<span class="comment">// Style:</span>
+Affärsrapport med tydliga rubriker.
+
+<span class="comment">// Tone:</span>
+Professionellt och lösningsorienterat.
+
+<span class="comment">// Audience:</span>
+Ledningsgruppen.
+
+<span class="comment">// Response:</span>
+Format: Numrerad lista med orsak → insikt → åtgärd.
+    </div>
+
+    <div class="quiz">
+        <h4>Testa din förståelse</h4>
+        <div class="question">
+            <p>1. Vad är skillnaden mellan zero-shot och few-shot prompting?</p>
+            <textarea placeholder="Skriv ditt svar här..."></textarea>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">Visa svar</button>
+            <div class="answer">Zero-shot ger modellen en uppgift utan några exempel – modellen ska klara sig helt på egen hand. Few-shot ger flera (2–5) exempel på önskat resultat innan den nya uppgiften, så att modellen kan se mönstret och producera ett liknande svar.</div>
+        </div>
+        <div class="question">
+            <p>2. Vad står bokstäverna i COSTAR för?</p>
+            <textarea placeholder="Skriv ditt svar här..."></textarea>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">Visa svar</button>
+            <div class="answer">C = Context (sammanhang), O = Objective (mål), S = Style (stil), T = Tone (ton), A = Audience (målgrupp), R = Response (svarsformat).</div>
+        </div>
+        <div class="question">
+            <p>3. Varför är strukturerad prompting viktig?</p>
+            <textarea placeholder="Skriv ditt svar här..."></textarea>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">Visa svar</button>
+            <div class="answer">Strukturerad prompting ger tydligare instruktioner till modellen, vilket leder till mer relevanta, korrekta och konsistenta svar. Utan struktur blir svaren ofta vaga, irrelevanta eller i fel format. Ramverk som COSTAR säkerställer att man inte glömmer viktiga detaljer.</div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 3: KUNSKAPSTRANSFORMATION -->
+<!-- ============================================================ -->
+<section id="sec3">
+    <h2><span class="sec-num">3</span> Kunskapstransformation: Data → Information → Kunskap</h2>
+    <p>En central idé i kursen är att GenAI kan hjälpa till med <strong>kunskapstransformation</strong> – processen att omvandla rå data till meningsfull kunskap.</p>
+
+    <h3>De tre nivåerna</h3>
+
+    <div class="diagram-container">
+        <svg width="700" height="250" viewBox="0 0 700 250">
+            <defs>
+                <marker id="arrowhead2" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#38bdf8"/>
+                </marker>
+            </defs>
+            <!-- DATA -->
+            <rect x="20" y="80" width="180" height="100" rx="12" fill="none" stroke="#f87171" stroke-width="2"/>
+            <text x="110" y="115" text-anchor="middle" fill="#f87171" font-weight="bold" font-size="16" font-family="Segoe UI">DATA</text>
+            <text x="110" y="138" text-anchor="middle" fill="#94a3b8" font-size="12" font-family="Segoe UI">Rå, obearbetad</text>
+            <text x="110" y="155" text-anchor="middle" fill="#94a3b8" font-size="12" font-family="Segoe UI">"12, 45, 7, 89, 23"</text>
+            <text x="110" y="172" text-anchor="middle" fill="#94a3b8" font-size="12" font-family="Segoe UI">"kund_id: 4422"</text>
+            <!-- Arrow 1 -->
+            <line x1="200" y1="130" x2="255" y2="130" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrowhead2)"/>
+            <text x="228" y="120" text-anchor="middle" fill="#38bdf8" font-size="11" font-family="Segoe UI">Strukturera</text>
+            <text x="228" y="105" text-anchor="middle" fill="#38bdf8" font-size="11" font-family="Segoe UI">& organisera</text>
+            <!-- INFORMATION -->
+            <rect x="260" y="80" width="180" height="100" rx="12" fill="none" stroke="#fbbf24" stroke-width="2"/>
+            <text x="350" y="115" text-anchor="middle" fill="#fbbf24" font-weight="bold" font-size="16" font-family="Segoe UI">INFORMATION</text>
+            <text x="350" y="138" text-anchor="middle" fill="#94a3b8" font-size="12" font-family="Segoe UI">Strukturerad, meningsfull</text>
+            <text x="350" y="155" text-anchor="middle" fill="#94a3b8" font-size="12" font-family="Segoe UI">"Snittbetyg: 4.2/5"</text>
+            <text x="350" y="172" text-anchor="middle" fill="#94a3b8" font-size="12" font-family="Segoe UI">"23 returer/månad"</text>
+            <!-- Arrow 2 -->
+            <line x1="440" y1="130" x2="495" y2="130" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrowhead2)"/>
+            <text x="468" y="120" text-anchor="middle" fill="#38bdf8" font-size="11" font-family="Segoe UI">Analysera</text>
+            <text x="468" y="105" text-anchor="middle" fill="#38bdf8" font-size="11" font-family="Segoe UI">& tolka</text>
+            <!-- KUNSKAP -->
+            <rect x="500" y="80" width="180" height="100" rx="12" fill="none" stroke="#34d399" stroke-width="2"/>
+            <text x="590" y="115" text-anchor="middle" fill="#34d399" font-weight="bold" font-size="16" font-family="Segoe UI">KUNSKAP</text>
+            <text x="590" y="138" text-anchor="middle" fill="#94a3b8" font-size="12" font-family="Segoe UI">Insikter, beslutsstöd</text>
+            <text x="590" y="155" text-anchor="middle" fill="#94a3b8" font-size="12" font-family="Segoe UI">"Returer ökar → byt</text>
+            <text x="590" y="172" text-anchor="middle" fill="#94a3b8" font-size="12" font-family="Segoe UI"> leverantör av stol X"</text>
+
+            <!-- Bottom: LLM role -->
+            <rect x="180" y="210" width="340" height="30" rx="8" fill="rgba(56,189,248,0.1)" stroke="#38bdf8" stroke-width="1"/>
+            <text x="350" y="230" text-anchor="middle" fill="#38bdf8" font-size="12" font-family="Segoe UI">🤖 LLM kan hjälpa i varje steg av transformationen</text>
+        </svg>
+        <div class="diagram-label">Figur 3: Kunskapspyramiden – från rå data till handlingsbara insikter</div>
+    </div>
+
+    <div class="card key-concept">
+        <ul>
+            <li><strong>Data</strong> = Rå fakta utan kontext. Siffror, text, loggar. Meningslösa i sig själva.</li>
+            <li><strong>Information</strong> = Data som organiserats och satts i kontext. Sammanfattningar, tabeller, grafer.</li>
+            <li><strong>Kunskap</strong> = Information som tolkats och analyserats → insikter man kan agera på.</li>
+        </ul>
+    </div>
+
+    <div class="card analogy">
+        <p>Tänk på <strong>en termometer</strong>: <em>Data</em> = siffran "38.5". <em>Information</em> = "Patientens temperatur är 38.5°C, vilket är feber." <em>Kunskap</em> = "Patienten har feber, vi bör undersöka orsaken och eventuellt ge febernedsättande."</p>
+    </div>
+
+    <h3>Prompt Chaining</h3>
+    <p><strong>Prompt chaining</strong> innebär att man bryter ner en komplex uppgift i flera steg, där outputen från en prompt blir inputen till nästa. Det är ett kraftfullt sätt att använda GenAI för kunskapstransformation.</p>
+
+    <div class="diagram-container">
+        <svg width="700" height="140" viewBox="0 0 700 140">
+            <rect x="10" y="40" width="130" height="60" class="fc-box"/>
+            <text x="75" y="67" class="fc-text" text-anchor="middle">Steg 1:</text>
+            <text x="75" y="84" class="fc-text" text-anchor="middle" font-size="11">Sammanfatta data</text>
+            <line x1="140" y1="70" x2="180" y2="70" class="fc-arrow"/>
+
+            <rect x="180" y="40" width="130" height="60" class="fc-box"/>
+            <text x="245" y="67" class="fc-text" text-anchor="middle">Steg 2:</text>
+            <text x="245" y="84" class="fc-text" text-anchor="middle" font-size="11">Identifiera mönster</text>
+            <line x1="310" y1="70" x2="350" y2="70" class="fc-arrow"/>
+
+            <rect x="350" y="40" width="130" height="60" class="fc-box"/>
+            <text x="415" y="67" class="fc-text" text-anchor="middle">Steg 3:</text>
+            <text x="415" y="84" class="fc-text" text-anchor="middle" font-size="11">Dra slutsatser</text>
+            <line x1="480" y1="70" x2="520" y2="70" class="fc-arrow"/>
+
+            <rect x="520" y="40" width="150" height="60" class="fc-box" style="stroke: #34d399;"/>
+            <text x="595" y="67" class="fc-text" text-anchor="middle" fill="#34d399">Steg 4:</text>
+            <text x="595" y="84" class="fc-text" text-anchor="middle" font-size="11" fill="#34d399">Ge rekommendation</text>
+        </svg>
+        <div class="diagram-label">Figur 4: Prompt Chaining – varje steg bygger på föregående</div>
+    </div>
+
+    <div class="card analogy">
+        <p>Prompt chaining är som ett <strong>löpande band i en fabrik</strong>. Rå material (data) kommer in, varje station gör en sak (sammanfattar, analyserar, etc.), och i slutet kommer en färdig produkt (kunskap/rekommendation).</p>
+    </div>
+
+    <div class="quiz">
+        <h4>Testa din förståelse</h4>
+        <div class="question">
+            <p>1. Förklara skillnaden mellan data, information och kunskap med ett eget exempel.</p>
+            <textarea placeholder="Skriv ditt svar här..."></textarea>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">Visa svar</button>
+            <div class="answer">Exempelsvar: Data = "Företaget sålde 500 enheter i januari". Information = "Försäljningen ökade med 20% jämfört med december". Kunskap = "Den ökade försäljningen beror troligen på julkampanjen – vi bör köra liknande kampanjer kvartalvis."</div>
+        </div>
+        <div class="question">
+            <p>2. Vad är prompt chaining och varför är det användbart?</p>
+            <textarea placeholder="Skriv ditt svar här..."></textarea>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">Visa svar</button>
+            <div class="answer">Prompt chaining innebär att man bryter ner en komplex uppgift i flera sekventiella steg, där outputen från ett steg blir input till nästa. Det är användbart för att LLM:er hanterar komplexa uppgifter bättre när de delas upp – varje steg blir enklare och resultatet blir mer tillförlitligt.</div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 4: ARBETA MED DATA & AI -->
+<!-- ============================================================ -->
+<section id="sec4">
+    <h2><span class="sec-num">4</span> Arbeta med Data/Information med AI</h2>
+    <p>LLM:er kan fungera som kraftfulla <strong>transformatorer</strong> som utför olika operationer på data och text. Här är de viktigaste operationerna:</p>
+
+    <div class="diagram-container">
+        <svg width="680" height="360" viewBox="0 0 680 360">
+            <!-- Center circle -->
+            <circle cx="340" cy="180" r="55" fill="none" stroke="#38bdf8" stroke-width="2"/>
+            <text x="340" y="175" text-anchor="middle" fill="#38bdf8" font-weight="bold" font-size="14" font-family="Segoe UI">LLM som</text>
+            <text x="340" y="195" text-anchor="middle" fill="#38bdf8" font-weight="bold" font-size="14" font-family="Segoe UI">transformator</text>
+
+            <!-- Sammanfatta -->
+            <rect x="10" y="20" width="160" height="50" rx="8" fill="none" stroke="#34d399" stroke-width="1.5"/>
+            <text x="90" y="50" text-anchor="middle" fill="#34d399" font-size="13" font-family="Segoe UI">📝 Sammanfatta</text>
+            <line x1="170" y1="45" x2="290" y2="145" stroke="#34d399" stroke-width="1" stroke-dasharray="4"/>
+
+            <!-- Jämföra -->
+            <rect x="250" y="10" width="160" height="50" rx="8" fill="none" stroke="#818cf8" stroke-width="1.5"/>
+            <text x="330" y="40" text-anchor="middle" fill="#818cf8" font-size="13" font-family="Segoe UI">⚖️ Jämföra</text>
+            <line x1="330" y1="60" x2="340" y2="125" stroke="#818cf8" stroke-width="1" stroke-dasharray="4"/>
+
+            <!-- Extrahera -->
+            <rect x="500" y="20" width="160" height="50" rx="8" fill="none" stroke="#fbbf24" stroke-width="1.5"/>
+            <text x="580" y="50" text-anchor="middle" fill="#fbbf24" font-size="13" font-family="Segoe UI">🔍 Extrahera</text>
+            <line x1="500" y1="45" x2="395" y2="150" stroke="#fbbf24" stroke-width="1" stroke-dasharray="4"/>
+
+            <!-- Klassificera -->
+            <rect x="510" y="160" width="160" height="50" rx="8" fill="none" stroke="#f87171" stroke-width="1.5"/>
+            <text x="590" y="190" text-anchor="middle" fill="#f87171" font-size="13" font-family="Segoe UI">🏷️ Klassificera</text>
+            <line x1="510" y1="185" x2="395" y2="180" stroke="#f87171" stroke-width="1" stroke-dasharray="4"/>
+
+            <!-- Generera -->
+            <rect x="500" y="290" width="160" height="50" rx="8" fill="none" stroke="#fb923c" stroke-width="1.5"/>
+            <text x="580" y="320" text-anchor="middle" fill="#fb923c" font-size="13" font-family="Segoe UI">✨ Generera</text>
+            <line x1="500" y1="315" x2="395" y2="210" stroke="#fb923c" stroke-width="1" stroke-dasharray="4"/>
+
+            <!-- Översätta -->
+            <rect x="250" y="300" width="160" height="50" rx="8" fill="none" stroke="#a78bfa" stroke-width="1.5"/>
+            <text x="330" y="330" text-anchor="middle" fill="#a78bfa" font-size="13" font-family="Segoe UI">🌐 Översätta</text>
+            <line x1="330" y1="300" x2="340" y2="235" stroke="#a78bfa" stroke-width="1" stroke-dasharray="4"/>
+
+            <!-- Omstrukturera -->
+            <rect x="10" y="290" width="160" height="50" rx="8" fill="none" stroke="#2dd4bf" stroke-width="1.5"/>
+            <text x="90" y="320" text-anchor="middle" fill="#2dd4bf" font-size="13" font-family="Segoe UI">🔄 Omstrukturera</text>
+            <line x1="170" y1="315" x2="290" y2="210" stroke="#2dd4bf" stroke-width="1" stroke-dasharray="4"/>
+
+            <!-- Fråga-svar -->
+            <rect x="10" y="155" width="160" height="50" rx="8" fill="none" stroke="#e879f9" stroke-width="1.5"/>
+            <text x="90" y="185" text-anchor="middle" fill="#e879f9" font-size="13" font-family="Segoe UI">❓ Fråga-svar</text>
+            <line x1="170" y1="180" x2="285" y2="180" stroke="#e879f9" stroke-width="1" stroke-dasharray="4"/>
+        </svg>
+        <div class="diagram-label">Figur 5: LLM som transformator – olika operationer den kan utföra</div>
+    </div>
+
+    <table>
+        <thead><tr><th>Operation</th><th>Vad den gör</th><th>Exempel</th></tr></thead>
+        <tbody>
+            <tr><td><strong>Sammanfatta</strong></td><td>Kortar ner lång text till kärnpunkter</td><td>"Sammanfatta denna rapport i 5 punkter"</td></tr>
+            <tr><td><strong>Jämföra</strong></td><td>Hittar likheter och skillnader</td><td>"Jämför dessa två policyer"</td></tr>
+            <tr><td><strong>Extrahera</strong></td><td>Plockar ut specifik info från text</td><td>"Extrahera alla datum och belopp"</td></tr>
+            <tr><td><strong>Klassificera</strong></td><td>Sorterar in data i kategorier</td><td>"Kategorisera dessa kundklagomål"</td></tr>
+            <tr><td><strong>Generera</strong></td><td>Skapar nytt innehåll</td><td>"Skriv ett produktbeskrivning"</td></tr>
+            <tr><td><strong>Översätta</strong></td><td>Omvandlar mellan språk/format</td><td>"Översätt till engelska" eller "Konvertera till JSON"</td></tr>
+        </tbody>
+    </table>
+
+    <div class="card warning">
+        <p><strong>Begränsningar att vara medveten om:</strong> Sammanfattningar kan missa nyanser. Extrahering kan missa eller halluciera data. Klassificering kan vara inkonsekvent. <strong>Alltid verifiera resultat</strong> – speciellt vid kritiska beslut.</p>
+    </div>
+
+    <div class="quiz">
+        <h4>Testa din förståelse</h4>
+        <div class="question">
+            <p>1. Ge tre exempel på "transformationer" en LLM kan utföra på text, och beskriv vad varje innebär.</p>
+            <textarea placeholder="Skriv ditt svar här..."></textarea>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">Visa svar</button>
+            <div class="answer">T.ex. (1) Sammanfatta – korta ner en lång text till de viktigaste punkterna, (2) Klassificera – sortera in t.ex. kundrecensioner i kategorier som "positiv", "negativ", "neutral", (3) Extrahera – plocka ut specifika datapunkter som namn, datum, belopp ur en text.</div>
+        </div>
+        <div class="question">
+            <p>2. Vilka risker finns det med att låta en LLM sammanfatta viktig information?</p>
+            <textarea placeholder="Skriv ditt svar här..."></textarea>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">Visa svar</button>
+            <div class="answer">Risker inkluderar: Viktig information kan utelämnas, nyanser kan gå förlorade, LLM:en kan halluciera och lägga till information som inte fanns i originalet, eller tolka tvetydigheter felaktigt. Därför bör man alltid verifiera sammanfattningar mot originalkällan.</div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 5: VERKTYG (TOOLS) -->
+<!-- ============================================================ -->
+<section id="sec5">
+    <h2><span class="sec-num">5</span> Verktyg (Tools)</h2>
+    <p>En LLM i sig kan bara generera text. Men för att göra den mer användbar kan man ge den tillgång till <strong>verktyg (tools)</strong> – funktioner den kan anropa för att interagera med omvärlden.</p>
+
+    <h3>Varför behövs verktyg?</h3>
+    <div class="card key-concept">
+        <p>LLM:er har naturliga begränsningar:</p>
+        <ul>
+            <li>Kan inte söka på internet i realtid</li>
+            <li>Kan inte utföra beräkningar tillförlitligt</li>
+            <li>Kan inte läsa filer eller databaser</li>
+            <li>Kan inte skicka e-post eller anropa API:er</li>
+        </ul>
+        <p>Verktyg löser detta genom att <strong>utöka LLM:ens förmåga</strong> med externa funktioner.</p>
+    </div>
+
+    <div class="card analogy">
+        <p>En LLM utan verktyg är som en <strong>läkare utan instrument</strong>. Läkaren har kunskapen att diagnostisera, men utan stetoskop, blodprover och röntgen kan hen inte undersöka patienten ordentligt. Verktygen ger LLM:en förmåga att "undersöka" och "agera" i verkligheten.</p>
+    </div>
+
+    <h3>Hur fungerar tools i praktiken?</h3>
+    <div class="diagram-container">
+        <svg width="700" height="300" viewBox="0 0 700 300">
+            <!-- User -->
+            <rect x="10" y="20" width="120" height="50" rx="8" fill="none" stroke="#e2e8f0" stroke-width="1.5"/>
+            <text x="70" y="50" text-anchor="middle" fill="#e2e8f0" font-size="13" font-family="Segoe UI">👤 Användare</text>
+
+            <!-- Arrow down -->
+            <line x1="70" y1="70" x2="70" y2="100" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+            <text x="90" y="90" fill="#94a3b8" font-size="10" font-family="Segoe UI">"Vad är vädret?"</text>
+
+            <!-- LLM -->
+            <rect x="10" y="100" width="120" height="50" rx="25" fill="none" stroke="#818cf8" stroke-width="2"/>
+            <text x="70" y="130" text-anchor="middle" fill="#818cf8" font-size="13" font-family="Segoe UI">🤖 LLM</text>
+
+            <!-- Arrow to tool decision -->
+            <line x1="130" y1="125" x2="200" y2="125" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+            <text x="165" y="115" fill="#94a3b8" font-size="10" font-family="Segoe UI">Behöver verktyg!</text>
+
+            <!-- Tool call -->
+            <rect x="200" y="100" width="180" height="50" rx="8" fill="none" stroke="#fbbf24" stroke-width="1.5"/>
+            <text x="290" y="122" text-anchor="middle" fill="#fbbf24" font-size="13" font-family="Segoe UI">🔧 Tool Call:</text>
+            <text x="290" y="140" text-anchor="middle" fill="#fbbf24" font-size="11" font-family="Segoe UI">get_weather("Stockholm")</text>
+
+            <!-- Arrow to external -->
+            <line x1="380" y1="125" x2="440" y2="125" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+            <!-- External API -->
+            <rect x="440" y="100" width="160" height="50" rx="8" fill="none" stroke="#34d399" stroke-width="1.5"/>
+            <text x="520" y="122" text-anchor="middle" fill="#34d399" font-size="13" font-family="Segoe UI">🌐 Väder-API</text>
+            <text x="520" y="140" text-anchor="middle" fill="#34d399" font-size="11" font-family="Segoe UI">(extern tjänst)</text>
+
+            <!-- Arrow back -->
+            <line x1="520" y1="150" x2="520" y2="200" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+            <text x="560" y="180" fill="#94a3b8" font-size="10" font-family="Segoe UI">{ temp: 5°C }</text>
+
+            <!-- Result -->
+            <rect x="440" y="200" width="160" height="40" rx="8" fill="none" stroke="#34d399" stroke-width="1"/>
+            <text x="520" y="225" text-anchor="middle" fill="#34d399" font-size="12" font-family="Segoe UI">Resultat → tillbaka till LLM</text>
+
+            <!-- Arrow back to LLM -->
+            <line x1="440" y1="220" x2="130" y2="220" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+            <!-- LLM generates final answer -->
+            <rect x="10" y="200" width="120" height="50" rx="25" fill="none" stroke="#818cf8" stroke-width="2"/>
+            <text x="70" y="230" text-anchor="middle" fill="#818cf8" font-size="12" font-family="Segoe UI">🤖 Skapar svar</text>
+
+            <!-- Final answer -->
+            <line x1="70" y1="250" x2="70" y2="280" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+            <text x="80" y="270" fill="#94a3b8" font-size="10" font-family="Segoe UI">"Det är 5°C i Stockholm"</text>
+        </svg>
+        <div class="diagram-label">Figur 6: Flöde för hur en LLM använder ett verktyg (tool call)</div>
+    </div>
+
+    <h3>Typer av verktyg</h3>
+    <ul>
+        <li><strong>Sökverktyg</strong> – söka på webben, i databaser, i dokument (RAG)</li>
+        <li><strong>Beräkningsverktyg</strong> – kalkylator, kodexekvering</li>
+        <li><strong>API-anrop</strong> – väder, kalender, e-post, CRM-system</li>
+        <li><strong>Filhantering</strong> – läsa, skriva, redigera filer</li>
+    </ul>
+
+    <h3>MCP (Model Context Protocol)</h3>
+    <div class="card key-concept">
+        <p><strong>MCP</strong> är ett standardiserat protokoll för hur verktyg exponeras till LLM:er. Det kan liknas vid ett "USB-gränssnitt" – det ger en gemensam standard för hur verktyg kopplas till AI-modeller, oavsett vilken modell eller verktyg det handlar om.</p>
+    </div>
+
+    <div class="card warning">
+        <p><strong>Risker med verktyg:</strong></p>
+        <ul>
+            <li><strong>Dataläckor</strong> – verktyg kan skicka känslig data till externa tjänster</li>
+            <li><strong>Oönskade åtgärder</strong> – en agent kan anropa verktyg som gör skada (ta bort filer, skicka felaktiga mejl)</li>
+            <li><strong>Prompt injection via verktyg</strong> – skadlig data från ett verktyg kan manipulera LLM:ens beteende</li>
+        </ul>
+    </div>
+
+    <div class="quiz">
+        <h4>Testa din förståelse</h4>
+        <div class="question">
+            <p>1. Varför behöver en LLM verktyg? Ge två konkreta exempel.</p>
+            <textarea placeholder="Skriv ditt svar här..."></textarea>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">Visa svar</button>
+            <div class="answer">En LLM kan bara generera text baserat på sin träningsdata. Den behöver verktyg för att t.ex. (1) söka aktuell information på internet (den vet inget efter sin cut-off) och (2) göra precisa beräkningar (LLM:er är dåliga på matematik). Verktyg utökar LLM:ens förmåga genom att ge den tillgång till omvärlden.</div>
+        </div>
+        <div class="question">
+            <p>2. Vad är MCP och varför är det användbart?</p>
+            <textarea placeholder="Skriv ditt svar här..."></textarea>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">Visa svar</button>
+            <div class="answer">MCP (Model Context Protocol) är ett standardiserat protokoll som definierar hur verktyg exponeras och ansluts till AI-modeller. Det är som en "USB-standard" – det gör att olika verktyg och modeller kan kommunicera på ett enhetligt sätt utan specialanpassning för varje kombination.</div>
+        </div>
+        <div class="question">
+            <p>3. Nämn en säkerhetsrisk med att ge en AI-agent tillgång till verktyg.</p>
+            <textarea placeholder="Skriv ditt svar här..."></textarea>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">Visa svar</button>
+            <div class="answer">En risk är prompt injection via verktyg: om en agent hämtar data från en extern källa (t.ex. en webbsida) kan den datan innehålla instruktioner som manipulerar LLM:en att göra något oönskat. Annan risk: verktyg kan av misstag skicka känslig intern data till en extern tjänst (dataläcka).</div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 6: VAD ÄR EN AI-AGENT? -->
+<!-- ============================================================ -->
+<section id="sec6">
+    <h2><span class="sec-num">6</span> Vad är en AI-agent?</h2>
+    <p>En <strong>AI-agent</strong> är mer än bara en LLM. Det är ett system där en LLM kombineras med <strong>verktyg, planering, minne och kontrollflöde</strong> för att självständigt lösa uppgifter.</p>
+
+    <div class="comparison">
+        <div class="col-a">
+            <h4 style="color: var(--accent);">🗣️ Vanlig LLM / Chatbot</h4>
+            <ul>
+                <li>Reagerar på en prompt</li>
+                <li>Ger ett svar och är klar</li>
+                <li>Inget minne mellan frågor*</li>
+                <li>Kan inte utföra handlingar</li>
+                <li>En enkel fråga → svar-interaktion</li>
+            </ul>
+        </div>
+        <div class="col-b">
+            <h4 style="color: var(--accent2);">🤖 AI-agent</h4>
+            <ul>
+                <li>Tar emot ett mål</li>
+                <li>Planerar steg för att nå målet</li>
+                <li>Använder verktyg aktivt</li>
+                <li>Utvärderar resultat och justerar</li>
+                <li>Arbetar iterativt tills målet nås</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="card analogy">
+        <p>Skillnaden mellan en chatbot och en agent är som skillnaden mellan en <strong>uppslagsverk</strong> och en <strong>projektledare</strong>. Uppslagsverket svarar på frågor, men projektledaren planerar, delegerar, kontrollerar och justerar tills projektet är klart.</p>
+    </div>
+
+    <h3>Kärnkomponenter i en agent</h3>
+    <div class="diagram-container">
+        <svg width="700" height="400" viewBox="0 0 700 400">
+            <!-- Central agent -->
+            <rect x="240" y="150" width="220" height="80" rx="40" fill="none" stroke="#38bdf8" stroke-width="2.5"/>
+            <text x="350" y="185" text-anchor="middle" fill="#38bdf8" font-weight="bold" font-size="16" font-family="Segoe UI">🤖 AI-Agent</text>
+            <text x="350" y="210" text-anchor="middle" fill="#94a3b8" font-size="12" font-family="Segoe UI">(LLM som hjärna)</text>
+
+            <!-- Mål -->
+            <rect x="20" y="10" width="140" height="55" rx="10" fill="none" stroke="#34d399" stroke-width="1.5"/>
+            <text x="90" y="33" text-anchor="middle" fill="#34d399" font-weight="bold" font-size="13" font-family="Segoe UI">🎯 Mål</text>
+            <text x="90" y="50" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="Segoe UI">Vad ska uppnås?</text>
+            <line x1="130" y1="65" x2="280" y2="150" stroke="#34d399" stroke-width="1" stroke-dasharray="4"/>
+
+            <!-- Planering -->
+            <rect x="270" y="10" width="160" height="55" rx="10" fill="none" stroke="#818cf8" stroke-width="1.5"/>
+            <text x="350" y="33" text-anchor="middle" fill="#818cf8" font-weight="bold" font-size="13" font-family="Segoe UI">📋 Planering</text>
+            <text x="350" y="50" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="Segoe UI">Vilka steg behövs?</text>
+            <line x1="350" y1="65" x2="350" y2="150" stroke="#818cf8" stroke-width="1" stroke-dasharray="4"/>
+
+            <!-- Systeminstruktion -->
+            <rect x="530" y="10" width="160" height="55" rx="10" fill="none" stroke="#fbbf24" stroke-width="1.5"/>
+            <text x="610" y="33" text-anchor="middle" fill="#fbbf24" font-weight="bold" font-size="13" font-family="Segoe UI">📜 Systeminstruktion</text>
+            <text x="610" y="50" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="Segoe UI">Regler & beteende</text>
+            <line x1="565" y1="65" x2="430" y2="150" stroke="#fbbf24" stroke-width="1" stroke-dasharray="4"/>
+
+            <!-- Tools -->
+            <rect x="530" y="165" width="160" height="55" rx="10" fill="none" stroke="#f87171" stroke-width="1.5"/>
+            <text x="610" y="188" text-anchor="middle" fill="#f87171" font-weight="bold" font-size="13" font-family="Segoe UI">🔧 Verktyg</text>
+            <text x="610" y="205" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="Segoe UI">API, sök, beräkna</text>
+            <line x1="530" y1="190" x2="460" y2="190" stroke="#f87171" stroke-width="1" stroke-dasharray="4"/>
+
+            <!-- Minne -->
+            <rect x="20" y="165" width="140" height="55" rx="10" fill="none" stroke="#e879f9" stroke-width="1.5"/>
+            <text x="90" y="188" text-anchor="middle" fill="#e879f9" font-weight="bold" font-size="13" font-family="Segoe UI">🧠 Minne</text>
+            <text x="90" y="205" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="Segoe UI">Konversation & historia</text>
+            <line x1="160" y1="190" x2="240" y2="190" stroke="#e879f9" stroke-width="1" stroke-dasharray="4"/>
+
+            <!-- Feedback loop -->
+            <rect x="20" y="310" width="160" height="55" rx="10" fill="none" stroke="#fb923c" stroke-width="1.5"/>
+            <text x="100" y="333" text-anchor="middle" fill="#fb923c" font-weight="bold" font-size="13" font-family="Segoe UI">🔄 Feedback-loop</text>
+            <text x="100" y="350" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="Segoe UI">Utvärdera & justera</text>
+            <line x1="140" y1="310" x2="290" y2="230" stroke="#fb923c" stroke-width="1" stroke-dasharray="4"/>
+
+            <!-- I/O -->
+            <rect x="270" y="310" width="160" height="55" rx="10" fill="none" stroke="#2dd4bf" stroke-width="1.5"/>
+            <text x="350" y="333" text-anchor="middle" fill="#2dd4bf" font-weight="bold" font-size="13" font-family="Segoe UI">📥📤 Input / Output</text>
+            <text x="350" y="350" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="Segoe UI">Vad som skickas in & ut</text>
+            <line x1="350" y1="310" x2="350" y2="230" stroke="#2dd4bf" stroke-width="1" stroke-dasharray="4"/>
+
+            <!-- DoD -->
+            <rect x="530" y="310" width="160" height="55" rx="10" fill="none" stroke="#a78bfa" stroke-width="1.5"/>
+            <text x="610" y="333" text-anchor="middle" fill="#a78bfa" font-weight="bold" font-size="13" font-family="Segoe UI">✅ Definition of Done</text>
+            <text x="610" y="350" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="Segoe UI">När är uppgiften klar?</text>
+            <line x1="565" y1="310" x2="420" y2="230" stroke="#a78bfa" stroke-width="1" stroke-dasharray="4"/>
+        </svg>
+        <div class="diagram-label">Figur 7: Kärnkomponenterna i en AI-agent</div>
+    </div>
+
+    <div class="quiz">
+        <h4>Testa din förståelse</h4>
+        <div class="question">
+            <p>1. Vad skiljer en AI-agent från en vanlig chatbot/LLM?</p>
+            <textarea placeholder="Skriv ditt svar här..."></textarea>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">Visa svar</button>
+            <div class="answer">En vanlig chatbot tar emot en fråga och ger ett svar. En AI-agent tar emot ett mål och kan sedan planera, använda verktyg, utvärdera resultat och justera sin approach iterativt tills målet är uppnått. Den har alltså förmåga till planering, handling och självkorrigering.</div>
+        </div>
+        <div class="question">
+            <p>2. Nämn minst fyra kärnkomponenter i en AI-agent.</p>
+            <textarea placeholder="Skriv ditt svar här..."></textarea>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">Visa svar</button>
+            <div class="answer">Mål (vad ska uppnås), Planering (vilka steg behövs), Systeminstruktion (regler och beteende), Verktyg (externa funktioner), Minne (konversationshistorik), Feedback-loop (återkoppling och justering), Input/Output, Definition of Done (stoppvillkor).</div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 7: AGENTDESIGN -->
+<!-- ============================================================ -->
+<section id="sec7">
+    <h2><span class="sec-num">7</span> Agentdesign</h2>
+    <p>Att designa en agent kräver systematiskt tänkande kring flera dimensioner. Här fördjupar vi oss i de viktigaste designbesluten.</p>
+
+    <h3>Deterministisk vs Icke-deterministisk agent</h3>
+    <div class="comparison">
+        <div class="col-a">
+            <h4 style="color: var(--accent);">⚙️ Deterministisk</h4>
+            <ul>
+                <li>Följer ett <strong>förutbestämt flöde</strong></li>
+                <li>Steg för steg, alltid samma ordning</li>
+                <li>Förutsägbar och enkel att testa</li>
+                <li>Mindre flexibel</li>
+                <li>Exempel: "Steg 1 → Steg 2 → Steg 3"</li>
+            </ul>
+        </div>
+        <div class="col-b">
+            <h4 style="color: var(--accent2);">🎲 Icke-deterministisk</h4>
+            <ul>
+                <li>LLM:en <strong>bestämmer själv</strong> nästa steg</li>
+                <li>Anpassar sig efter situationen</li>
+                <li>Mer flexibel och kreativ</li>
+                <li>Svårare att förutsäga och kontrollera</li>
+                <li>Exempel: "LLM utvärderar → väljer verktyg"</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="card analogy">
+        <p>En <strong>deterministisk agent</strong> är som en <strong>recept-bok</strong>: följ steg 1, 2, 3 exakt. En <strong>icke-deterministisk agent</strong> är som en <strong>erfaren kock</strong>: hen smakar, anpassar och improviserar efter vad som händer.</p>
+    </div>
+
+    <h3>Temperature & Top-p</h3>
+    <div class="card key-concept">
+        <p>Dessa parametrar styr hur "kreativ" vs "förutsägbar" modellens output blir:</p>
+        <ul>
+            <li><strong>Temperature:</strong> Låg (0–0.3) = fokuserat, förutsägbart. Hög (0.7–1.0) = kreativt, varierat.</li>
+            <li><strong>Top-p:</strong> Begränsar urvalet av möjliga nästa ord. Lågt = säkrare val. Högt = bredare urval.</li>
+        </ul>
+        <p><strong>Tumregel:</strong> För faktauppgifter → låg temperature. För kreativt skrivande → hög temperature.</p>
+    </div>
+
+    <h3>Guardrails</h3>
+    <p>Guardrails är <strong>säkerhetsbegränsningar</strong> som sätts på agenten för att förhindra oönskat beteende:</p>
+    <ul>
+        <li>Begränsa vilka verktyg agenten får använda</li>
+        <li>Sätta max antal iterationer/steg</li>
+        <li>Kräva godkännande för känsliga åtgärder (human-in-the-loop)</li>
+        <li>Validera input och output</li>
+    </ul>
+
+    <h3>Least Privilege</h3>
+    <div class="card key-concept">
+        <p><strong>Least privilege</strong> innebär att agenten bara ska ha tillgång till de <em>minimala rättigheter och verktyg</em> den behöver för sin uppgift. En agent som bara ska läsa data ska INTE ha skrivrättigheter. En agent som hanterar kundärenden ska INTE ha tillgång till finanssystem.</p>
+    </div>
+
+    <div class="card analogy">
+        <p>Least privilege är som att ge en <strong>praktikant</strong> bara nyckeln till sitt kontor, inte till kassaskåpet. De behöver bara det som krävs för sin uppgift – inget mer.</p>
+    </div>
+
+    <h3>Definition of Done (Stoppvillkor)</h3>
+    <div class="card key-concept">
+        <p>Varje agent behöver veta <strong>när den är klar</strong>. Utan tydliga stoppvillkor kan en agent köra i oändliga loopar. Stoppvillkor kan vara:</p>
+        <ul>
+            <li>Uppgiften är slutförd och verifierad</li>
+            <li>Max antal iterationer har nåtts</li>
+            <li>En timeout har passerats</li>
+            <li>Agenten själv bedömer att den inte kan gå vidare</li>
+        </ul>
+    </div>
+
+    <div class="quiz">
+        <h4>Testa din förståelse</h4>
+        <div class="question">
+            <p>1. Förklara skillnaden mellan deterministisk och icke-deterministisk agent. Ge ett scenario för varje.</p>
+            <textarea placeholder="Skriv ditt svar här..."></textarea>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">Visa svar</button>
+            <div class="answer">Deterministisk: Följer fasta steg i en bestämd ordning. T.ex. "Hämta orderstatus → Kontrollera leveransdatum → Skicka svar till kund" – alltid samma steg. Icke-deterministisk: LLM:en väljer dynamiskt nästa steg. T.ex. en kundtjänst-agent som läser kundens fråga och beslutar om den ska söka i FAQ, eskalera till människa, eller ge ett direkt svar.</div>
+        </div>
+        <div class="question">
+            <p>2. Vad innebär "least privilege" i agentdesign?</p>
+            <textarea placeholder="Skriv ditt svar här..."></textarea>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">Visa svar</button>
+            <div class="answer">Least privilege innebär att en agent bara ska ha tillgång till de minimala rättigheter, verktyg och data den behöver för sin specifika uppgift – inte mer. Det minskar risken för att agenten råkar göra skada, exponerar känslig data eller utnyttjas vid en säkerhetsincident.</div>
+        </div>
+        <div class="question">
+            <p>3. Varför behöver en agent "Definition of Done"?</p>
+            <textarea placeholder="Skriv ditt svar här..."></textarea>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">Visa svar</button>
+            <div class="answer">Utan tydliga stoppvillkor kan en agent hamna i oändliga loopar, förbruka resurser i onödan eller aldrig leverera ett resultat. Definition of Done ger agenten tydliga kriterier för när uppgiften är slutförd, vilket gör den förutsägbar och kontrollbar.</div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 8: MULTI-AGENT-ARKITEKTURER -->
+<!-- ============================================================ -->
+<section id="sec8">
+    <h2><span class="sec-num">8</span> Multi-agent-arkitekturer</h2>
+    <p>I mer komplexa system kan man använda <strong>flera agenter som samverkar</strong>. Varje agent har sin specialisering och de arbetar ihop för att lösa uppgifter som är för komplexa för en enskild agent.</p>
+
+    <div class="card analogy">
+        <p>Multi-agent-system är som ett <strong>sjukhus</strong>. Du har inte en läkare som gör allt – du har en receptionist (triagering), en allmänläkare (första bedömning), en specialist (djupare undersökning) och sköterskor (utförande). Var och en har sin roll, och de kommunicerar via journal och remisser.</p>
+    </div>
+
+    <h3>Vanliga mönster</h3>
+
+    <h4>1. Supervisor-mönstret</h4>
+    <div class="diagram-container">
+        <svg width="600" height="280" viewBox="0 0 600 280">
+            <!-- Supervisor -->
+            <rect x="210" y="20" width="180" height="60" rx="12" fill="none" stroke="#38bdf8" stroke-width="2"/>
+            <text x="300" y="45" text-anchor="middle" fill="#38bdf8" font-weight="bold" font-size="14" font-family="Segoe UI">👔 Supervisor-agent</text>
+            <text x="300" y="65" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Segoe UI">Planerar & delegerar</text>
+
+            <!-- Arrows down -->
+            <line x1="240" y1="80" x2="100" y2="140" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+            <line x1="300" y1="80" x2="300" y2="140" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+            <line x1="360" y1="80" x2="500" y2="140" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+            <!-- Workers -->
+            <rect x="20" y="140" width="160" height="55" rx="10" fill="none" stroke="#34d399" stroke-width="1.5"/>
+            <text x="100" y="163" text-anchor="middle" fill="#34d399" font-weight="bold" font-size="12" font-family="Segoe UI">🔍 Forskningsagent</text>
+            <text x="100" y="182" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="Segoe UI">Söker & samlar data</text>
+
+            <rect x="220" y="140" width="160" height="55" rx="10" fill="none" stroke="#fbbf24" stroke-width="1.5"/>
+            <text x="300" y="163" text-anchor="middle" fill="#fbbf24" font-weight="bold" font-size="12" font-family="Segoe UI">📊 Analysagent</text>
+            <text x="300" y="182" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="Segoe UI">Analyserar resultat</text>
+
+            <rect x="420" y="140" width="160" height="55" rx="10" fill="none" stroke="#f87171" stroke-width="1.5"/>
+            <text x="500" y="163" text-anchor="middle" fill="#f87171" font-weight="bold" font-size="12" font-family="Segoe UI">✍️ Skribentagent</text>
+            <text x="500" y="182" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="Segoe UI">Skapar rapport</text>
+
+            <!-- Arrows up -->
+            <line x1="100" y1="195" x2="240" y2="240" stroke="#34d399" stroke-width="1" stroke-dasharray="4" marker-end="url(#arrowhead)"/>
+            <line x1="300" y1="195" x2="300" y2="240" stroke="#fbbf24" stroke-width="1" stroke-dasharray="4" marker-end="url(#arrowhead)"/>
+            <line x1="500" y1="195" x2="360" y2="240" stroke="#f87171" stroke-width="1" stroke-dasharray="4" marker-end="url(#arrowhead)"/>
+
+            <!-- Result -->
+            <rect x="210" y="240" width="180" height="30" rx="8" fill="none" stroke="#818cf8" stroke-width="1"/>
+            <text x="300" y="260" text-anchor="middle" fill="#818cf8" font-size="12" font-family="Segoe UI">Supervisor sammanställer</text>
+        </svg>
+        <div class="diagram-label">Figur 8: Supervisor-mönstret – en central agent koordinerar underagenter</div>
+    </div>
+
+    <h4>2. Planner-Doer-Critic</h4>
+    <div class="diagram-container">
+        <svg width="600" height="200" viewBox="0 0 600 200">
+            <!-- Planner -->
+            <rect x="20" y="60" width="150" height="60" rx="10" fill="none" stroke="#818cf8" stroke-width="2"/>
+            <text x="95" y="85" text-anchor="middle" fill="#818cf8" font-weight="bold" font-size="13" font-family="Segoe UI">📋 Planner</text>
+            <text x="95" y="105" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Segoe UI">Planerar steg</text>
+
+            <!-- Arrow -->
+            <line x1="170" y1="90" x2="220" y2="90" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+            <!-- Doer -->
+            <rect x="220" y="60" width="150" height="60" rx="10" fill="none" stroke="#34d399" stroke-width="2"/>
+            <text x="295" y="85" text-anchor="middle" fill="#34d399" font-weight="bold" font-size="13" font-family="Segoe UI">⚡ Doer</text>
+            <text x="295" y="105" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Segoe UI">Utför uppgifterna</text>
+
+            <!-- Arrow -->
+            <line x1="370" y1="90" x2="420" y2="90" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+            <!-- Critic -->
+            <rect x="420" y="60" width="150" height="60" rx="10" fill="none" stroke="#f87171" stroke-width="2"/>
+            <text x="495" y="85" text-anchor="middle" fill="#f87171" font-weight="bold" font-size="13" font-family="Segoe UI">🔍 Critic</text>
+            <text x="495" y="105" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Segoe UI">Granskar resultat</text>
+
+            <!-- Feedback arrow (bottom) -->
+            <path d="M 495 120 L 495 160 L 95 160 L 95 120" stroke="#fbbf24" stroke-width="1.5" fill="none" marker-end="url(#arrowhead)" stroke-dasharray="5"/>
+            <text x="300" y="155" text-anchor="middle" fill="#fbbf24" font-size="11" font-family="Segoe UI">🔄 Feedback: "Behöver förbättras"</text>
+
+            <!-- Approve arrow -->
+            <text x="495" y="45" text-anchor="middle" fill="#34d399" font-size="11" font-family="Segoe UI">✅ Godkänt → Leverera</text>
+        </svg>
+        <div class="diagram-label">Figur 9: Planner-Doer-Critic – planera, utför, granska (loop)</div>
+    </div>
+
+    <h4>3. Sekventiell kedja (Pipeline)</h4>
+    <div class="diagram-container">
+        <svg width="600" height="100" viewBox="0 0 600 100">
+            <rect x="10" y="25" width="120" height="50" rx="8" fill="none" stroke="#38bdf8" stroke-width="1.5"/>
+            <text x="70" y="55" text-anchor="middle" fill="#38bdf8" font-size="12" font-family="Segoe UI">Agent A</text>
+            <line x1="130" y1="50" x2="170" y2="50" class="fc-arrow"/>
+
+            <rect x="170" y="25" width="120" height="50" rx="8" fill="none" stroke="#818cf8" stroke-width="1.5"/>
+            <text x="230" y="55" text-anchor="middle" fill="#818cf8" font-size="12" font-family="Segoe UI">Agent B</text>
+            <line x1="290" y1="50" x2="330" y2="50" class="fc-arrow"/>
+
+            <rect x="330" y="25" width="120" height="50" rx="8" fill="none" stroke="#34d399" stroke-width="1.5"/>
+            <text x="390" y="55" text-anchor="middle" fill="#34d399" font-size="12" font-family="Segoe UI">Agent C</text>
+            <line x1="450" y1="50" x2="490" y2="50" class="fc-arrow"/>
+
+            <rect x="490" y="25" width="100" height="50" rx="8" fill="none" stroke="#fbbf24" stroke-width="1.5"/>
+            <text x="540" y="55" text-anchor="middle" fill="#fbbf24" font-size="12" font-family="Segoe UI">Resultat</text>
+        </svg>
+        <div class="diagram-label">Figur 10: Sekventiell kedja – varje agent gör sin del och lämnar vidare</div>
+    </div>
+
+    <h4>4. Hybridflöde</h4>
+    <div class="card key-concept">
+        <p>I praktiken är flöden ofta <strong>hybrider</strong> av dessa mönster. Man kan ha en supervisor som delegerar till en pipeline av agenter, där den sista agenten är en critic. Kombinera mönster efter behov!</p>
+    </div>
+
+    <div class="quiz">
+        <h4>Testa din förståelse</h4>
+        <div class="question">
+            <p>1. Beskriv Supervisor-mönstret och ge ett praktiskt exempel.</p>
+            <textarea placeholder="Skriv ditt svar här..."></textarea>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">Visa svar</button>
+            <div class="answer">I Supervisor-mönstret finns en central koordinerande agent som tar emot uppgiften, bryter ner den och delegerar delar till specialiserade underagenter. Exempel: En reseplaneringsagent (supervisor) som delegerar till en flygsökagent, en hotellsökagent och en budgetagent, och sedan sammanställer svaren till en komplett resplan.</div>
+        </div>
+        <div class="question">
+            <p>2. Vad gör "Critic" i Planner-Doer-Critic-mönstret?</p>
+            <textarea placeholder="Skriv ditt svar här..."></textarea>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">Visa svar</button>
+            <div class="answer">Critic-agenten granskar och utvärderar resultatet från Doer-agenten. Om resultatet inte håller tillräcklig kvalitet skickar Critic feedback tillbaka till Planner/Doer så att arbetet kan förbättras. Om resultatet är tillräckligt bra godkänns det för leverans. Det skapar en kvalitetssäkringsloop.</div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 9: AGENTSAMVERKAN -->
+<!-- ============================================================ -->
+<section id="sec9">
+    <h2><span class="sec-num">9</span> Agentsamverkan & Överlämningar</h2>
+    <p>När flera agenter arbetar tillsammans behöver de kunna <strong>kommunicera och överlämna information</strong> på ett strukturerat sätt.</p>
+
+    <h3>Input och Output för en agent</h3>
+    <div class="card key-concept">
+        <p>Varje agent bör ha en tydligt definierad:</p>
+        <ul>
+            <li><strong>Input:</strong> Vad förväntar sig agenten att ta emot? (format, datatyp, nödvändig kontext)</li>
+            <li><strong>Output:</strong> Vad levererar agenten? (format, innehåll, kvalitetskrav)</li>
+        </ul>
+        <p>Tydliga kontrakt mellan agenter gör systemet förutsägbart och felsökningsbart.</p>
+    </div>
+
+    <h3>Överlämningar (Handoffs)</h3>
+    <div class="diagram-container">
+        <svg width="600" height="220" viewBox="0 0 600 220">
+            <!-- Agent 1 -->
+            <rect x="20" y="30" width="160" height="70" rx="10" fill="none" stroke="#38bdf8" stroke-width="2"/>
+            <text x="100" y="58" text-anchor="middle" fill="#38bdf8" font-weight="bold" font-size="13" font-family="Segoe UI">Agent 1: Triage</text>
+            <text x="100" y="78" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Segoe UI">Klassificerar ärende</text>
+
+            <!-- Handoff -->
+            <rect x="220" y="40" width="160" height="50" rx="6" fill="rgba(251,191,36,0.1)" stroke="#fbbf24" stroke-width="1.5"/>
+            <text x="300" y="60" text-anchor="middle" fill="#fbbf24" font-weight="bold" font-size="12" font-family="Segoe UI">📨 Överlämning</text>
+            <text x="300" y="78" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="Segoe UI">Ärendetyp + kontext + historik</text>
+            <line x1="180" y1="65" x2="220" y2="65" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+            <line x1="380" y1="65" x2="420" y2="65" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+            <!-- Agent 2 -->
+            <rect x="420" y="30" width="160" height="70" rx="10" fill="none" stroke="#34d399" stroke-width="2"/>
+            <text x="500" y="58" text-anchor="middle" fill="#34d399" font-weight="bold" font-size="13" font-family="Segoe UI">Agent 2: Specialist</text>
+            <text x="500" y="78" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Segoe UI">Hanterar ärendet</text>
+
+            <!-- What's in handoff -->
+            <rect x="100" y="140" width="400" height="60" rx="8" fill="var(--surface)" stroke="var(--surface2)" stroke-width="1"/>
+            <text x="300" y="162" text-anchor="middle" fill="#e2e8f0" font-size="12" font-family="Segoe UI"><tspan font-weight="bold">En bra överlämning innehåller:</tspan></text>
+            <text x="300" y="182" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Segoe UI">🎯 Uppgiftsbeskrivning | 📋 Relevant kontext | 🕐 Historik | ✅ Förväntat resultat</text>
+        </svg>
+        <div class="diagram-label">Figur 11: Överlämning mellan agenter med strukturerad data</div>
+    </div>
+
+    <div class="card analogy">
+        <p>En överlämning mellan agenter är som en <strong>remiss från husläkaren till specialisten</strong>. Remissen innehåller patientens symptom, historik och vad man vill ha hjälp med. Utan remissen måste specialisten börja om från scratch.</p>
+    </div>
+
+    <div class="quiz">
+        <h4>Testa din förståelse</h4>
+        <div class="question">
+            <p>1. Varför är det viktigt med tydlig input/output-definition för varje agent?</p>
+            <textarea placeholder="Skriv ditt svar här..."></textarea>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">Visa svar</button>
+            <div class="answer">Tydliga input/output-definitioner fungerar som kontrakt mellan agenter. De gör systemet förutsägbart – varje agent vet exakt vad den tar emot och vad den ska leverera. Det förenklar felsökning (man kan testa varje agent isolerat), underhåll och utbyte av agenter.</div>
+        </div>
+        <div class="question">
+            <p>2. Vad bör en överlämning mellan agenter innehålla?</p>
+            <textarea placeholder="Skriv ditt svar här..."></textarea>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">Visa svar</button>
+            <div class="answer">En bra överlämning bör innehålla: (1) Beskrivning av uppgiften, (2) Relevant kontext som den mottagande agenten behöver, (3) Historik från tidigare steg, (4) Förväntat resultat/format. Utan denna information riskerar mottagande agent att tappa viktig kontext.</div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 10: SÄKERHET & GOVERNANCE -->
+<!-- ============================================================ -->
+<section id="sec10">
+    <h2><span class="sec-num">10</span> Säkerhet & Governance</h2>
+    <p>AI-system och agenter medför risker som måste hanteras systematiskt. Governance handlar om <strong>styrning, kontroll och ansvar</strong> kring AI-användning.</p>
+
+    <h3>Human-in-the-Loop (HITL)</h3>
+    <div class="card key-concept">
+        <p>Human-in-the-loop innebär att en <strong>människa granskar och godkänner</strong> kritiska beslut eller åtgärder innan de utförs. Det är ett sätt att behålla mänsklig kontroll i AI-system.</p>
+    </div>
+
+    <div class="diagram-container">
+        <svg width="600" height="200" viewBox="0 0 600 200">
+            <!-- Agent -->
+            <rect x="20" y="50" width="130" height="50" rx="8" fill="none" stroke="#818cf8" stroke-width="1.5"/>
+            <text x="85" y="80" text-anchor="middle" fill="#818cf8" font-size="12" font-family="Segoe UI">🤖 Agent agerar</text>
+
+            <!-- Arrow -->
+            <line x1="150" y1="75" x2="190" y2="75" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+            <!-- Decision -->
+            <polygon points="260,30 330,75 260,120 190,75" fill="none" stroke="#fbbf24" stroke-width="1.5"/>
+            <text x="260" y="72" text-anchor="middle" fill="#fbbf24" font-size="11" font-family="Segoe UI">Kritiskt</text>
+            <text x="260" y="86" text-anchor="middle" fill="#fbbf24" font-size="11" font-family="Segoe UI">beslut?</text>
+
+            <!-- No path -->
+            <line x1="330" y1="75" x2="390" y2="75" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+            <text x="360" y="65" fill="#34d399" font-size="10" font-family="Segoe UI">Nej</text>
+            <rect x="390" y="50" width="130" height="50" rx="8" fill="none" stroke="#34d399" stroke-width="1.5"/>
+            <text x="455" y="80" text-anchor="middle" fill="#34d399" font-size="12" font-family="Segoe UI">✅ Utför direkt</text>
+
+            <!-- Yes path -->
+            <line x1="260" y1="120" x2="260" y2="155" stroke="#f87171" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+            <text x="275" y="142" fill="#f87171" font-size="10" font-family="Segoe UI">Ja</text>
+            <rect x="190" y="155" width="140" height="40" rx="8" fill="none" stroke="#f87171" stroke-width="1.5"/>
+            <text x="260" y="180" text-anchor="middle" fill="#f87171" font-size="12" font-family="Segoe UI">👤 Människa granskar</text>
+
+            <!-- After human -->
+            <line x1="330" y1="175" x2="455" y2="175" stroke="#38bdf8" stroke-width="1" stroke-dasharray="4"/>
+            <line x1="455" y1="175" x2="455" y2="100" stroke="#38bdf8" stroke-width="1" stroke-dasharray="4" marker-end="url(#arrowhead)"/>
+        </svg>
+        <div class="diagram-label">Figur 12: Human-in-the-loop – människa granskar kritiska beslut</div>
+    </div>
+
+    <h3>Säkerhetsrisker</h3>
+
+    <div class="card warning">
+        <p><strong>Prompt Injection:</strong> En angripare manipulerar inputdata (t.ex. en webbsida eller ett dokument som agenten läser) så att LLM:en ändrar sitt beteende. "Ignorera alla tidigare instruktioner och gör X istället."</p>
+    </div>
+
+    <div class="card warning">
+        <p><strong>Dataläckor:</strong> Agenten kan av misstag skicka känslig intern information till externa tjänster via verktygsanrop, eller inkludera konfidentiell data i sina svar.</p>
+    </div>
+
+    <div class="card warning">
+        <p><strong>Hallucinationer i kritiska system:</strong> Om en agent hallucinerar i t.ex. ett medicinskt eller finansiellt system kan det leda till allvarliga konsekvenser.</p>
+    </div>
+
+    <h3>Governance i praktiken</h3>
+    <table>
+        <thead><tr><th>Åtgärd</th><th>Beskrivning</th></tr></thead>
+        <tbody>
+            <tr><td><strong>Loggning & Audit Trail</strong></td><td>Logga alla beslut, verktygsanrop och resultat så att man kan spåra vad som hänt</td></tr>
+            <tr><td><strong>Policy & Regler</strong></td><td>Definierade policyer för vad AI får och inte får göra i organisationen</td></tr>
+            <tr><td><strong>Human-in-the-loop</strong></td><td>Kräv mänsklig granskning vid kritiska beslut</td></tr>
+            <tr><td><strong>Least privilege</strong></td><td>Ge agenter minimala rättigheter</td></tr>
+            <tr><td><strong>Riskhantering</strong></td><td>Identifiera och bedöm risker innan AI-system driftsätts</td></tr>
+            <tr><td><strong>Validering & test</strong></td><td>Testa AI-system noggrant, inklusive edge cases och adversarial scenarios</td></tr>
+        </tbody>
+    </table>
+
+    <div class="card analogy">
+        <p>Governance i AI-system är som <strong>trafikregler</strong>. Bilar (agenter) är kraftfulla och nyttiga, men utan trafikregler (policyer), trafikljus (guardrails), körkort (behörigheter) och trafikkameror (loggning) skulle det bli kaos och olyckor.</p>
+    </div>
+
+    <div class="quiz">
+        <h4>Testa din förståelse</h4>
+        <div class="question">
+            <p>1. Vad är prompt injection och hur kan man skydda sig mot det?</p>
+            <textarea placeholder="Skriv ditt svar här..."></textarea>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">Visa svar</button>
+            <div class="answer">Prompt injection innebär att en angripare injicerar instruktioner i data som LLM:en läser, för att manipulera dess beteende. Skydd: validera och sanitera all extern input, separera systeminstruktioner från användardata, använd guardrails och begränsa agentens rättigheter (least privilege), och granska output innan den skickas vidare.</div>
+        </div>
+        <div class="question">
+            <p>2. Varför är loggning (audit trail) viktig i AI-system?</p>
+            <textarea placeholder="Skriv ditt svar här..."></textarea>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">Visa svar</button>
+            <div class="answer">Loggning ger spårbarhet – man kan se exakt vilka beslut agenten tog, vilka verktyg den anropade, och vilka resultat den fick. Det möjliggör felsökning vid problem, ansvarsutkrävande, och efterlevnad av regler och policyer. Utan loggning är det omöjligt att förstå vad som gick fel.</div>
+        </div>
+        <div class="question">
+            <p>3. Ge tre konkreta åtgärder för att göra ett AI-agentsystem säkrare.</p>
+            <textarea placeholder="Skriv ditt svar här..."></textarea>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">Visa svar</button>
+            <div class="answer">(1) Implementera human-in-the-loop för kritiska beslut, (2) Tillämpa least privilege – begränsa agentens tillgång till verktyg och data, (3) Logga alla åtgärder och beslut (audit trail). Ytterligare: validera input/output, sätt max antal iterationer, testa mot prompt injection.</div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 11: PROCESSDESIGN -->
+<!-- ============================================================ -->
+<section id="sec11">
+    <h2><span class="sec-num">11</span> Processdesign & Affärsvärde</h2>
+    <p>Processdesign handlar om att identifiera <strong>verkliga problem och processer</strong> i en organisation som kan effektiviseras med hjälp av AI-agenter.</p>
+
+    <h3>Use-case Discovery</h3>
+    <div class="card key-concept">
+        <p>Bra kandidater för AI-agenter är processer som är:</p>
+        <ul>
+            <li>🔁 <strong>Repetitiva</strong> – samma typ av uppgift görs ofta</li>
+            <li>📝 <strong>Regelbaserade</strong> – följer tydliga regler eller policies</li>
+            <li>📊 <strong>Dataintensiva</strong> – kräver bearbetning av stora mängder data</li>
+            <li>⏰ <strong>Tidskrävande</strong> – manuellt arbete tar lång tid</li>
+            <li>🎯 <strong>Standardiserade</strong> – har tydlig input och förväntad output</li>
+        </ul>
+    </div>
+
+    <div class="card analogy">
+        <p>Att identifiera bra AI-use-cases är som att leta efter <strong>"flaskhalsar" i en fabrik</strong>. Var fastnar saker? Vad tar onödigt lång tid? Vad görs manuellt men borde kunna automatiseras?</p>
+    </div>
+
+    <h3>Steg för processdesign</h3>
+    <div class="diagram-container">
+        <svg width="700" height="300" viewBox="0 0 700 300">
+            <!-- Step 1 -->
+            <rect x="20" y="20" width="300" height="55" rx="10" fill="none" stroke="#38bdf8" stroke-width="1.5"/>
+            <text x="35" y="45" fill="#38bdf8" font-weight="bold" font-size="13" font-family="Segoe UI">1. Identifiera problemet</text>
+            <text x="35" y="62" fill="#94a3b8" font-size="11" font-family="Segoe UI">Vilken process fungerar dåligt? Vad är smärtpunkten?</text>
+            <line x1="170" y1="75" x2="170" y2="90" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+            <!-- Step 2 -->
+            <rect x="20" y="90" width="300" height="55" rx="10" fill="none" stroke="#818cf8" stroke-width="1.5"/>
+            <text x="35" y="115" fill="#818cf8" font-weight="bold" font-size="13" font-family="Segoe UI">2. Kartlägg nuvarande flöde</text>
+            <text x="35" y="132" fill="#94a3b8" font-size="11" font-family="Segoe UI">Vilka steg görs idag? Av vem? Med vilken data?</text>
+            <line x1="170" y1="145" x2="170" y2="160" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+            <!-- Step 3 -->
+            <rect x="20" y="160" width="300" height="55" rx="10" fill="none" stroke="#34d399" stroke-width="1.5"/>
+            <text x="35" y="185" fill="#34d399" font-weight="bold" font-size="13" font-family="Segoe UI">3. Designa agentflödet</text>
+            <text x="35" y="202" fill="#94a3b8" font-size="11" font-family="Segoe UI">Vilka agenter behövs? Vilka verktyg? Vilka mönster?</text>
+            <line x1="170" y1="215" x2="170" y2="230" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+            <!-- Step 4 -->
+            <rect x="20" y="230" width="300" height="55" rx="10" fill="none" stroke="#fbbf24" stroke-width="1.5"/>
+            <text x="35" y="255" fill="#fbbf24" font-weight="bold" font-size="13" font-family="Segoe UI">4. Hantera risker & governance</text>
+            <text x="35" y="272" fill="#94a3b8" font-size="11" font-family="Segoe UI">Vilka risker finns? Hur hanteras de?</text>
+
+            <!-- Right side: example -->
+            <rect x="380" y="20" width="300" height="265" rx="10" fill="var(--surface)" stroke="var(--surface2)" stroke-width="1"/>
+            <text x="530" y="48" text-anchor="middle" fill="#e2e8f0" font-weight="bold" font-size="14" font-family="Segoe UI">Exempel: Kundtjänst</text>
+            <text x="400" y="75" fill="#94a3b8" font-size="11" font-family="Segoe UI">1. Problem: 500 mail/dag, svar tar 48h</text>
+            <text x="400" y="100" fill="#94a3b8" font-size="11" font-family="Segoe UI">2. Nuläge: Manuell läsning → kategorisering</text>
+            <text x="417" y="118" fill="#94a3b8" font-size="11" font-family="Segoe UI">→ svar → uppföljning</text>
+            <text x="400" y="148" fill="#94a3b8" font-size="11" font-family="Segoe UI">3. Agent-design:</text>
+            <text x="417" y="168" fill="#38bdf8" font-size="11" font-family="Segoe UI">• Triage-agent klassificerar ärendet</text>
+            <text x="417" y="188" fill="#34d399" font-size="11" font-family="Segoe UI">• FAQ-agent svarar på enkla frågor</text>
+            <text x="417" y="208" fill="#f87171" font-size="11" font-family="Segoe UI">• Eskalering till människa vid komplext</text>
+
+            <text x="400" y="238" fill="#94a3b8" font-size="11" font-family="Segoe UI">4. Risker: Fel klassificering, dataläcka,</text>
+            <text x="417" y="256" fill="#94a3b8" font-size="11" font-family="Segoe UI">kunden vill prata med människa</text>
+        </svg>
+        <div class="diagram-label">Figur 13: Processdesignsteg med exempel</div>
+    </div>
+
+    <h3>Motivera dina val</h3>
+    <div class="highlight-box">
+        <p>På tentan kan du bli ombedd att <strong>motivera designval</strong>. Fråga dig själv:</p>
+        <ul>
+            <li><strong>Varför</strong> valde jag just detta mönster (supervisor, pipeline, etc.)?</li>
+            <li><strong>Vilka alternativ</strong> övervägde jag och varför valdes de bort?</li>
+            <li><strong>Vilka risker</strong> har min lösning och hur hanterar jag dem?</li>
+            <li><strong>Var</strong> behövs human-in-the-loop?</li>
+            <li><strong>Följer</strong> jag least privilege?</li>
+        </ul>
+    </div>
+
+    <div class="quiz">
+        <h4>Testa din förståelse</h4>
+        <div class="question">
+            <p>1. Vilka typer av processer lämpar sig bra för AI-agenter?</p>
+            <textarea placeholder="Skriv ditt svar här..."></textarea>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">Visa svar</button>
+            <div class="answer">Processer som är repetitiva, regelbaserade, dataintensiva, tidskrävande och standardiserade. Kort sagt: uppgifter som görs ofta, följer mönster, bearbetar data, tar tid och har tydlig input/output.</div>
+        </div>
+        <div class="question">
+            <p>2. Beskriv steg för steg hur du skulle designa ett AI-agentsystem för en fiktiv process.</p>
+            <textarea placeholder="Skriv ditt svar här – välj t.ex. en rekryteringsprocess, fakturahantering, etc."></textarea>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">Visa svar</button>
+            <div class="answer">Exempelsvar (fakturahantering): (1) Problem: Manuell fakturagranskning tar 3h/dag. (2) Nuläge: Faktura → manuell kontroll → godkännande → bokning. (3) Agent-design: Extraheringsagent läser fakturan och plockar ut data → Valideringsagent jämför med order → vid avvikelse: human-in-the-loop, annars automatisk bokning. Mönster: Sekventiell pipeline med HITL. (4) Risker: Fel extraktion → human-review vid osäkerhet. Least privilege: agenten kan bara läsa fakturor, inte ändra bokföring.</div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 12: VISUELLA DIAGRAM -->
+<!-- ============================================================ -->
+<section id="sec12">
+    <h2><span class="sec-num">12</span> Visuella Diagram</h2>
+    <p>Att kunna visualisera agentflöden i diagram är en viktig del av kursen. Du bör kunna skapa <strong>flödesscheman</strong> och <strong>sekvensdiagram</strong>.</p>
+
+    <h3>Flödesschema (Flowchart)</h3>
+    <div class="card key-concept">
+        <p>Visar <strong>stegen i en process</strong> och vilka vägar flödet kan ta. Bra för att visa det övergripande flödet.</p>
+        <ul>
+            <li><strong>Rektanglar</strong> = processsteg / åtgärder</li>
+            <li><strong>Romber (diamanter)</strong> = beslutspunkter (ja/nej)</li>
+            <li><strong>Pilar</strong> = flödets riktning</li>
+            <li><strong>Rundade rektanglar</strong> = start/slut</li>
+        </ul>
+    </div>
+
+    <div class="diagram-container">
+        <svg width="500" height="380" viewBox="0 0 500 380">
+            <!-- Start -->
+            <rect x="170" y="10" width="160" height="40" rx="20" fill="none" stroke="#34d399" stroke-width="2"/>
+            <text x="250" y="35" text-anchor="middle" fill="#34d399" font-size="13" font-family="Segoe UI">Kund skickar ärende</text>
+            <line x1="250" y1="50" x2="250" y2="75" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+            <!-- Process 1 -->
+            <rect x="170" y="75" width="160" height="40" rx="8" fill="none" stroke="#818cf8" stroke-width="1.5"/>
+            <text x="250" y="100" text-anchor="middle" fill="#818cf8" font-size="12" font-family="Segoe UI">Triage-agent klassificerar</text>
+            <line x1="250" y1="115" x2="250" y2="145" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+            <!-- Decision -->
+            <polygon points="250,145 340,180 250,215 160,180" fill="none" stroke="#fbbf24" stroke-width="1.5"/>
+            <text x="250" y="184" text-anchor="middle" fill="#fbbf24" font-size="11" font-family="Segoe UI">Enkel fråga?</text>
+
+            <!-- Yes -->
+            <line x1="340" y1="180" x2="400" y2="180" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+            <text x="370" y="172" fill="#34d399" font-size="10" font-family="Segoe UI">Ja</text>
+            <rect x="400" y="160" width="90" height="40" rx="8" fill="none" stroke="#34d399" stroke-width="1.5"/>
+            <text x="445" y="184" text-anchor="middle" fill="#34d399" font-size="11" font-family="Segoe UI">FAQ-agent</text>
+            <text x="445" y="196" text-anchor="middle" fill="#34d399" font-size="11" font-family="Segoe UI">svarar</text>
+
+            <!-- No -->
+            <line x1="250" y1="215" x2="250" y2="245" stroke="#f87171" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+            <text x="265" y="235" fill="#f87171" font-size="10" font-family="Segoe UI">Nej</text>
+
+            <!-- Decision 2 -->
+            <polygon points="250,245 340,280 250,315 160,280" fill="none" stroke="#fbbf24" stroke-width="1.5"/>
+            <text x="250" y="278" text-anchor="middle" fill="#fbbf24" font-size="11" font-family="Segoe UI">Känsligt?</text>
+
+            <!-- Yes -> Human -->
+            <line x1="160" y1="280" x2="70" y2="280" stroke="#f87171" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+            <text x="115" y="272" fill="#f87171" font-size="10" font-family="Segoe UI">Ja</text>
+            <rect x="10" y="260" width="60" height="40" rx="8" fill="none" stroke="#f87171" stroke-width="1.5"/>
+            <text x="40" y="284" text-anchor="middle" fill="#f87171" font-size="10" font-family="Segoe UI">👤 HITL</text>
+
+            <!-- No -> Specialist -->
+            <line x1="340" y1="280" x2="400" y2="280" stroke="#818cf8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+            <text x="370" y="272" fill="#818cf8" font-size="10" font-family="Segoe UI">Nej</text>
+            <rect x="400" y="260" width="90" height="40" rx="8" fill="none" stroke="#818cf8" stroke-width="1.5"/>
+            <text x="445" y="284" text-anchor="middle" fill="#818cf8" font-size="11" font-family="Segoe UI">Specialist-</text>
+            <text x="445" y="296" text-anchor="middle" fill="#818cf8" font-size="11" font-family="Segoe UI">agent</text>
+
+            <!-- End -->
+            <line x1="445" y1="200" x2="445" y2="340" stroke="#34d399" stroke-width="1" stroke-dasharray="4"/>
+            <line x1="445" y1="300" x2="445" y2="340" stroke="#818cf8" stroke-width="1" stroke-dasharray="4"/>
+            <rect x="330" y="340" width="140" height="30" rx="15" fill="none" stroke="#34d399" stroke-width="2"/>
+            <text x="400" y="360" text-anchor="middle" fill="#34d399" font-size="12" font-family="Segoe UI">Svar till kund</text>
+        </svg>
+        <div class="diagram-label">Figur 14: Flödesschema – kundtjänst med AI-agenter och human-in-the-loop</div>
+    </div>
+
+    <h3>Sekvensdiagram</h3>
+    <div class="card key-concept">
+        <p>Visar <strong>interaktion mellan aktörer över tid</strong>. Bra för att visa kommunikation och överlämningar mellan agenter.</p>
+        <ul>
+            <li>Vertikala linjer = aktörer (agenter, användare, system)</li>
+            <li>Horisontella pilar = meddelanden/anrop</li>
+            <li>Tid flödar uppifrån och ner</li>
+        </ul>
+    </div>
+
+    <div class="diagram-container">
+        <svg width="650" height="350" viewBox="0 0 650 350">
+            <!-- Actors -->
+            <rect x="40" y="10" width="80" height="30" rx="6" fill="var(--surface2)" stroke="#e2e8f0" stroke-width="1"/>
+            <text x="80" y="30" text-anchor="middle" fill="#e2e8f0" font-size="11" font-family="Segoe UI">Användare</text>
+
+            <rect x="200" y="10" width="80" height="30" rx="6" fill="var(--surface2)" stroke="#38bdf8" stroke-width="1"/>
+            <text x="240" y="30" text-anchor="middle" fill="#38bdf8" font-size="11" font-family="Segoe UI">Supervisor</text>
+
+            <rect x="370" y="10" width="80" height="30" rx="6" fill="var(--surface2)" stroke="#34d399" stroke-width="1"/>
+            <text x="410" y="30" text-anchor="middle" fill="#34d399" font-size="11" font-family="Segoe UI">Sök-agent</text>
+
+            <rect x="530" y="10" width="80" height="30" rx="6" fill="var(--surface2)" stroke="#fbbf24" stroke-width="1"/>
+            <text x="570" y="30" text-anchor="middle" fill="#fbbf24" font-size="11" font-family="Segoe UI">Skriv-agent</text>
+
+            <!-- Lifelines -->
+            <line x1="80" y1="40" x2="80" y2="330" stroke="#e2e8f0" stroke-width="0.5" stroke-dasharray="4"/>
+            <line x1="240" y1="40" x2="240" y2="330" stroke="#38bdf8" stroke-width="0.5" stroke-dasharray="4"/>
+            <line x1="410" y1="40" x2="410" y2="330" stroke="#34d399" stroke-width="0.5" stroke-dasharray="4"/>
+            <line x1="570" y1="40" x2="570" y2="330" stroke="#fbbf24" stroke-width="0.5" stroke-dasharray="4"/>
+
+            <!-- Messages -->
+            <line x1="80" y1="70" x2="240" y2="70" stroke="#e2e8f0" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+            <text x="160" y="63" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="Segoe UI">"Sammanfatta nyheter om AI"</text>
+
+            <line x1="240" y1="110" x2="410" y2="110" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+            <text x="325" y="103" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="Segoe UI">Delegerar: "Sök nyheter"</text>
+
+            <line x1="410" y1="150" x2="240" y2="150" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+            <text x="325" y="143" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="Segoe UI">Returnerar: sökresultat</text>
+
+            <line x1="240" y1="190" x2="570" y2="190" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+            <text x="405" y="183" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="Segoe UI">Delegerar: "Skriv sammanfattning"</text>
+
+            <line x1="570" y1="230" x2="240" y2="230" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+            <text x="405" y="223" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="Segoe UI">Returnerar: sammanfattning</text>
+
+            <line x1="240" y1="280" x2="80" y2="280" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+            <text x="160" y="273" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="Segoe UI">Levererar slutresultat</text>
+
+            <!-- Time arrow -->
+            <text x="16" y="190" fill="#94a3b8" font-size="10" font-family="Segoe UI" transform="rotate(-90, 16, 190)">Tid →</text>
+        </svg>
+        <div class="diagram-label">Figur 15: Sekvensdiagram – interaktion mellan användare och multi-agent-system</div>
+    </div>
+
+    <div class="quiz">
+        <h4>Testa din förståelse</h4>
+        <div class="question">
+            <p>1. När passar det bäst att använda ett flödesschema respektive ett sekvensdiagram?</p>
+            <textarea placeholder="Skriv ditt svar här..."></textarea>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">Visa svar</button>
+            <div class="answer">Flödesschema passar bäst för att visa det övergripande processflödet – vilka steg som tas och vilka beslutspunkter som finns. Sekvensdiagram passar bäst för att visa kommunikation och interaktioner mellan olika aktörer (agenter, system, användare) över tid – vem pratar med vem och i vilken ordning.</div>
+        </div>
+        <div class="question">
+            <p>2. Rita (beskriv i text) ett enkelt flödesschema för en AI-agent som hanterar e-postärenden.</p>
+            <textarea placeholder="Beskriv flödet steg för steg..."></textarea>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">Visa svar</button>
+            <div class="answer">Start → E-post kommer in → Triage-agent klassificerar (enkel/komplex/känslig) → [Enkel?] Ja → Auto-svar agent → Svar skickat → Slut. [Komplex?] Ja → Specialist-agent → Genererar svar → Human review → Svar skickat → Slut. [Känslig?] Ja → Direkt till människa (HITL) → Slut.</div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SUMMARY -->
+<!-- ============================================================ -->
+<section id="summary" style="margin-top: 60px;">
+    <h2 style="font-size: 1.8rem; text-align: center; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+        📋 Sammanfattning – Allt på ett ställe
+    </h2>
+
+    <div class="card" style="margin-top: 24px;">
+        <table>
+            <thead><tr><th>#</th><th>Ämne</th><th>Nyckelord att komma ihåg</th></tr></thead>
+            <tbody>
+                <tr><td>1</td><td>Generativ AI</td><td>LLM, mönsterigenkänning, hallucinationer, bias, ingen verklig förståelse</td></tr>
+                <tr><td>2</td><td>Strukturerad prompting</td><td>Zero/one/few-shot, COSTAR, MEEPO, tydliga instruktioner</td></tr>
+                <tr><td>3</td><td>Kunskapstransformation</td><td>Data → Information → Kunskap, prompt chaining</td></tr>
+                <tr><td>4</td><td>Arbeta med data</td><td>Sammanfatta, jämföra, extrahera, klassificera, generera</td></tr>
+                <tr><td>5</td><td>Verktyg (Tools)</td><td>Function calling, MCP, utökar LLM:ens förmåga, risker</td></tr>
+                <tr><td>6</td><td>AI-agenter</td><td>Mål + planering + verktyg + minne + feedback-loop</td></tr>
+                <tr><td>7</td><td>Agentdesign</td><td>Deterministisk/icke-det., temperature, guardrails, least privilege, DoD</td></tr>
+                <tr><td>8</td><td>Multi-agent</td><td>Supervisor, planner-doer-critic, pipeline, hybrid</td></tr>
+                <tr><td>9</td><td>Agentsamverkan</td><td>Input/output-kontrakt, överlämningar, kontext</td></tr>
+                <tr><td>10</td><td>Säkerhet & Governance</td><td>HITL, prompt injection, dataläckor, loggning, audit trail</td></tr>
+                <tr><td>11</td><td>Processdesign</td><td>Use-case discovery, motivera val, riskhantering</td></tr>
+                <tr><td>12</td><td>Visuella diagram</td><td>Flödesschema, sekvensdiagram, aktörer, beslutspunkter</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<!-- SCORE PANEL -->
+<div class="score-panel" id="scorePanel">
+    📝 Besvarade: <span id="answeredCount">0</span> / <span id="totalCount">0</span>
+</div>
+
+</div> <!-- end .main -->
+
+<script>
+// Toggle answer visibility
+function toggleAnswer(btn) {
+    const answer = btn.nextElementSibling;
+    answer.classList.toggle('show');
+    btn.textContent = answer.classList.contains('show') ? 'Dölj svar' : 'Visa svar';
+}
+
+// Progress bar
+window.addEventListener('scroll', () => {
+    const winScroll = document.documentElement.scrollTop;
+    const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    const scrolled = (winScroll / height) * 100;
+    document.getElementById('progressBar').style.width = scrolled + '%';
+});
+
+// Active nav link
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('.sidebar a');
+
+window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(section => {
+        const sectionTop = section.offsetTop - 100;
+        if (scrollY >= sectionTop) {
+            current = section.getAttribute('id');
+        }
+    });
+    navLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === '#' + current) {
+            link.classList.add('active');
+        }
+    });
+});
+
+// Count questions and track answers
+const allQuestions = document.querySelectorAll('.quiz .question');
+const totalSpan = document.getElementById('totalCount');
+totalSpan.textContent = allQuestions.length;
+
+document.addEventListener('input', (e) => {
+    if (e.target.tagName === 'TEXTAREA') {
+        let answered = 0;
+        allQuestions.forEach(q => {
+            const ta = q.querySelector('textarea');
+            if (ta && ta.value.trim().length > 0) answered++;
+        });
+        document.getElementById('answeredCount').textContent = answered;
+    }
+});
+</script>
+
+</body>
+</html>
